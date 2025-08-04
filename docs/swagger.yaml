@@ -1,0 +1,765 @@
+basePath: /
+definitions:
+  repository.AnimeDetailResponse:
+    properties:
+      anime_slug:
+        example: haikyuu-movie-gomisuteba-no-kessen
+        type: string
+      confidence_score:
+        example: 1
+        type: number
+      details:
+        $ref: '#/definitions/repository.Details'
+      episode_list:
+        items:
+          $ref: '#/definitions/repository.EpisodeListItem'
+        type: array
+      genre:
+        example:
+        - School
+        - Sports
+        items:
+          type: string
+        type: array
+      judul:
+        example: Nonton Anime Haikyuu!! Movie...
+        type: string
+      penonton:
+        example: N/A
+        type: string
+      rating:
+        $ref: '#/definitions/repository.RatingInfo'
+      recommendations:
+        items:
+          $ref: '#/definitions/repository.RecommendationItem'
+        type: array
+      sinopsis:
+        example: Kozume Kenma tidak pernah menganggap...
+        type: string
+      skor:
+        example: "8.65"
+        type: string
+      status:
+        example: Completed
+        type: string
+      tipe:
+        example: Movie
+        type: string
+      url_anime:
+        example: https://v1.samehadaku.how/anime/haikyuu-movie-gomisuteba-no-kessen/
+        type: string
+      url_cover:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg
+        type: string
+    type: object
+  repository.AnimeInfo:
+    properties:
+      genres:
+        example:
+        - School
+        - Sports
+        items:
+          type: string
+        type: array
+      synopsis:
+        example: Kozume Kenma tidak pernah menganggap...
+        type: string
+      thumbnail_url:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg
+        type: string
+      title:
+        example: 'Haikyuu!! Movie: Gomisuteba no Kessen'
+        type: string
+    type: object
+  repository.AnimeTerbaruItem:
+    properties:
+      anime_slug:
+        example: zutaboro-reijou-wa-ane-no-moto
+        type: string
+      cover:
+        example: https://v1.samehadaku.how/wp-content/uploads/2025/08/Zutaboro-Reijou-wa-Ane-no-Moto-Episode-5.jpg
+        type: string
+      episode:
+        example: "5"
+        type: string
+      judul:
+        example: Zutaboro Reijou wa Ane no Moto
+        type: string
+      rilis:
+        example: 5 hours yang lalu
+        type: string
+      uploader:
+        example: Urusai
+        type: string
+      url:
+        example: https://v1.samehadaku.how/anime/zutaboro-reijou-wa-ane-no-moto/
+        type: string
+    type: object
+  repository.AnimeTerbaruResponse:
+    properties:
+      confidence_score:
+        example: 1
+        type: number
+      data:
+        items:
+          $ref: '#/definitions/repository.AnimeTerbaruItem'
+        type: array
+    type: object
+  repository.Details:
+    properties:
+      Duration:
+        type: string
+      English:
+        type: string
+      Japanese:
+        type: string
+      Producers:
+        type: string
+      'Released:':
+        type: string
+      Season:
+        type: string
+      Source:
+        type: string
+      Status:
+        type: string
+      Studio:
+        type: string
+      Synonyms:
+        type: string
+      Total Episode:
+        type: string
+      Type:
+        type: string
+    type: object
+  repository.DownloadProvider:
+    properties:
+      provider:
+        example: Gofile
+        type: string
+      url:
+        example: https://gofile.io/d/l3ahTO
+        type: string
+    type: object
+  repository.EpisodeDetailResponse:
+    properties:
+      anime_info:
+        $ref: '#/definitions/repository.AnimeInfo'
+      confidence_score:
+        example: 1
+        type: number
+      download_links:
+        additionalProperties:
+          additionalProperties:
+            items:
+              $ref: '#/definitions/repository.DownloadProvider'
+            type: array
+          type: object
+        type: object
+      navigation:
+        $ref: '#/definitions/repository.EpisodeNavigation'
+      other_episodes:
+        items:
+          $ref: '#/definitions/repository.OtherEpisode'
+        type: array
+      release_info:
+        example: 9 months yang lalu
+        type: string
+      streaming_servers:
+        items:
+          $ref: '#/definitions/repository.StreamingServer'
+        type: array
+      thumbnail_url:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg
+        type: string
+      title:
+        example: 'Haikyuu Movie: Gomisuteba no Kessen Sub Indo'
+        type: string
+    type: object
+  repository.EpisodeListItem:
+    properties:
+      episode:
+        example: "1"
+        type: string
+      episode_slug:
+        example: haikyuu-gomisuteba-no-kessen
+        type: string
+      release_date:
+        example: 31 October 2024
+        type: string
+      title:
+        example: 'Haikyuu Movie: Gomisuteba no Kessen'
+        type: string
+      url:
+        example: https://v1.samehadaku.how/haikyuu-gomisuteba-no-kessen/
+        type: string
+    type: object
+  repository.EpisodeNavigation:
+    properties:
+      all_episodes_url:
+        type: string
+      next_episode_url:
+        type: string
+      previous_episode_url:
+        type: string
+    type: object
+  repository.FinalResponse:
+    properties:
+      confidence_score:
+        type: number
+      jadwal_rilis:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/repository.JadwalAnime'
+          type: array
+        type: object
+      movies:
+        items:
+          $ref: '#/definitions/repository.Movie'
+        type: array
+      new_eps:
+        items:
+          $ref: '#/definitions/repository.NewEps'
+        type: array
+      top10:
+        items:
+          $ref: '#/definitions/repository.Top10Anime'
+        type: array
+    type: object
+  repository.JadwalAnime:
+    properties:
+      anime_slug:
+        type: string
+      cover_url:
+        type: string
+      genres:
+        description: 'Catatan: Data ini tidak tersedia dari scraper'
+        items:
+          type: string
+        type: array
+      release_time:
+        type: string
+      score:
+        description: 'Catatan: Data ini tidak tersedia dari scraper'
+        type: string
+      title:
+        type: string
+      type:
+        description: 'Catatan: Data ini tidak tersedia dari scraper'
+        type: string
+      url:
+        type: string
+    type: object
+  repository.JadwalAnimeResponse:
+    properties:
+      anime_slug:
+        example: busamen-gachi-fighter
+        type: string
+      cover_url:
+        example: https://v1.samehadaku.how/wp-content/uploads/2025/07/150515.jpg
+        type: string
+      genres:
+        example:
+        - Action
+        - Adventure
+        items:
+          type: string
+        type: array
+      release_time:
+        example: "00:00"
+        type: string
+      score:
+        example: "6.68"
+        type: string
+      title:
+        example: Busamen Gachi Fighter
+        type: string
+      type:
+        example: TV
+        type: string
+      url:
+        example: https://v1.samehadaku.how/anime/busamen-gachi-fighter/
+        type: string
+    type: object
+  repository.JadwalHarianResponse:
+    properties:
+      confidence_score:
+        example: 1
+        type: number
+      data:
+        items:
+          $ref: '#/definitions/repository.JadwalAnimeResponse'
+        type: array
+    type: object
+  repository.Movie:
+    properties:
+      anime_slug:
+        type: string
+      cover:
+        type: string
+      genres:
+        items:
+          type: string
+        type: array
+      judul:
+        type: string
+      tanggal:
+        description: 'Catatan: Data ini tidak tersedia dari scraper'
+        type: string
+      url:
+        type: string
+    type: object
+  repository.MovieItem:
+    properties:
+      anime_slug:
+        example: spy-x-family-code-white
+        type: string
+      cover:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/08/139388.jpg
+        type: string
+      genres:
+        example:
+        - Action
+        - Comedy
+        items:
+          type: string
+        type: array
+      judul:
+        example: 'Spy x Family: Code White'
+        type: string
+      sinopsis:
+        example: Loid Forger, an elite spy, is warned by his handler...
+        type: string
+      skor:
+        example: "8.1"
+        type: string
+      status:
+        example: Completed
+        type: string
+      tanggal:
+        example: 22 Desember 2023
+        type: string
+      url:
+        example: https://v1.samehadaku.how/anime/spy-x-family-code-white/
+        type: string
+      views:
+        example: 342490 Views
+        type: string
+    type: object
+  repository.MovieListResponse:
+    properties:
+      confidence_score:
+        example: 1
+        type: number
+      data:
+        items:
+          $ref: '#/definitions/repository.MovieItem'
+        type: array
+    type: object
+  repository.NewEps:
+    properties:
+      anime_slug:
+        type: string
+      cover:
+        type: string
+      episode:
+        type: string
+      judul:
+        type: string
+      rilis:
+        description: 'Catatan: Data ini tidak tersedia dari scraper'
+        type: string
+      url:
+        type: string
+    type: object
+  repository.OtherEpisode:
+    properties:
+      release_date:
+        example: 31 October 2024
+        type: string
+      thumbnail_url:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/10/Haikyu.The_.Dumpster.Battle.jpg
+        type: string
+      title:
+        example: 'Haikyuu Movie: Gomisuteba no Kessen'
+        type: string
+      url:
+        example: https://v1.samehadaku.how/haikyuu-gomisuteba-no-kessen/
+        type: string
+    type: object
+  repository.RatingInfo:
+    properties:
+      score:
+        example: "8.65"
+        type: string
+      users:
+        example: 34,719
+        type: string
+    type: object
+  repository.RecommendationItem:
+    properties:
+      anime_slug:
+        example: overlord-iii
+        type: string
+      cover_url:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/07/93473.jpg
+        type: string
+      episode:
+        example: Eps 12
+        type: string
+      rating:
+        example: "8"
+        type: string
+      title:
+        example: Overlord III
+        type: string
+      url:
+        example: https://v1.samehadaku.how/anime/overlord-iii/
+        type: string
+    type: object
+  repository.SearchResponse:
+    properties:
+      confidence_score:
+        example: 1
+        type: number
+      data:
+        items:
+          $ref: '#/definitions/repository.SearchResultItem'
+        type: array
+    type: object
+  repository.SearchResultItem:
+    properties:
+      anime_slug:
+        example: naruto-kecil
+        type: string
+      genre:
+        example:
+        - Action
+        - Adventure
+        items:
+          type: string
+        type: array
+      judul:
+        example: Naruto Kecil
+        type: string
+      penonton:
+        example: 154157 Views
+        type: string
+      sinopsis:
+        example: Beberapa saat sebelum Naruto Uzumaki lahir...
+        type: string
+      skor:
+        example: "8.84"
+        type: string
+      status:
+        example: Completed
+        type: string
+      tipe:
+        example: TV
+        type: string
+      url_anime:
+        example: https://v1.samehadaku.how/anime/naruto-kecil/
+        type: string
+      url_cover:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg
+        type: string
+    type: object
+  repository.StreamingServer:
+    properties:
+      server_name:
+        example: Nakama 1080p
+        type: string
+      streaming_url:
+        example: https://pixeldrain.com/api/file/Ra5A3rtj
+        type: string
+    type: object
+  repository.Top10Anime:
+    properties:
+      anime_slug:
+        type: string
+      cover:
+        type: string
+      genres:
+        items:
+          type: string
+        type: array
+      judul:
+        type: string
+      rating:
+        type: string
+      url:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+    url: https://github.com/you
+  description: API untuk mengambil data anime terbaru dan jadwal rilis dari Gomunime.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Gomunime Scraper API
+  version: "1.0"
+paths:
+  /api/v1/anime-detail/:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil detail lengkap sebuah anime berdasarkan slug seri atau
+        slug episode.
+      parameters:
+      - description: Slug dari anime yang ingin dicari
+        in: query
+        name: anime_slug
+        required: true
+        type: string
+      - description: Force refresh cache (opsional, belum diimplementasikan)
+        in: query
+        name: force_refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detail anime berhasil diambil
+          schema:
+            $ref: '#/definitions/repository.AnimeDetailResponse'
+        "400":
+          description: Parameter anime_slug tidak ditemukan
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Anime tidak ditemukan
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Anime Detail
+      tags:
+      - Anime Detail
+  /api/v1/anime-terbaru/:
+    get:
+      description: Mengambil daftar rilis anime terbaru dengan paginasi.
+      parameters:
+      - default: 1
+        description: Nomor halaman
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Daftar rilis terbaru berhasil diambil
+          schema:
+            $ref: '#/definitions/repository.AnimeTerbaruResponse'
+        "400":
+          description: Parameter halaman tidak valid
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Latest Anime Releases
+      tags:
+      - Anime List
+  /api/v1/episode-detail/:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil detail lengkap sebuah episode berdasarkan URL.
+      parameters:
+      - description: URL lengkap dari halaman episode
+        in: query
+        name: episode_url
+        required: true
+        type: string
+      - description: Force refresh cache (opsional, belum diimplementasikan)
+        in: query
+        name: force_refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detail episode berhasil diambil
+          schema:
+            $ref: '#/definitions/repository.EpisodeDetailResponse'
+        "400":
+          description: Parameter episode_url tidak valid atau kosong
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Episode tidak ditemukan
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Episode Detail
+      tags:
+      - Episode Detail
+  /api/v1/home/:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar anime terbaru, film, top 10, dan jadwal rilis
+        mingguan.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data berhasil diambil
+          schema:
+            $ref: '#/definitions/repository.FinalResponse'
+        "500":
+          description: Error internal server
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Latest Anime & Schedule
+      tags:
+      - Anime
+  /api/v1/jadwal-rilis/:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil jadwal rilis anime untuk semua hari.
+      parameters:
+      - description: Force refresh cache (opsional, belum diimplementasikan)
+        in: query
+        name: force_refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Jadwal rilis berhasil diambil
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error internal server
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Release Schedule
+      tags:
+      - Jadwal Rilis
+  /api/v1/jadwal-rilis/{day}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil jadwal rilis anime untuk hari yang spesifik.
+      parameters:
+      - description: Hari dalam bahasa Indonesia (e.g., senin, selasa)
+        in: path
+        name: day
+        required: true
+        type: string
+      - description: Force refresh cache (opsional, belum diimplementasikan)
+        in: query
+        name: force_refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Jadwal rilis berhasil diambil
+          schema:
+            $ref: '#/definitions/repository.JadwalHarianResponse'
+        "404":
+          description: Hari tidak ditemukan
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error internal server
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Release Schedule by Day
+      tags:
+      - Jadwal Rilis
+  /api/v1/movie/:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar anime dari halaman utama (latest) sebagai pengganti
+        daftar film.
+      parameters:
+      - default: 1
+        description: Nomor halaman
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Daftar berhasil diambil
+          schema:
+            $ref: '#/definitions/repository.MovieListResponse'
+        "400":
+          description: Parameter halaman tidak valid
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error internal server
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get "Movie" List (from Latest)
+      tags:
+      - Movie
+  /api/v1/search/:
+    get:
+      description: Mencari anime berdasarkan query.
+      parameters:
+      - description: Kata kunci pencarian
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hasil pencarian
+          schema:
+            $ref: '#/definitions/repository.SearchResponse'
+        "400":
+          description: Parameter query tidak ditemukan
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search Anime
+      tags:
+      - Anime List
+  /health:
+    get:
+      description: Memeriksa apakah layanan berjalan dengan baik.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Layanan berjalan
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health Check
+      tags:
+      - Utilities
+swagger: "2.0"

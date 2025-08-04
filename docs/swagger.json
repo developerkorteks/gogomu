@@ -1,0 +1,1117 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API untuk mengambil data anime terbaru dan jadwal rilis dari Gomunime.",
+        "title": "Gomunime Scraper API",
+        "contact": {
+            "name": "API Support",
+            "url": "https://github.com/you"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/anime-detail/": {
+            "get": {
+                "description": "Mengambil detail lengkap sebuah anime berdasarkan slug seri atau slug episode.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime Detail"
+                ],
+                "summary": "Get Anime Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Slug dari anime yang ingin dicari",
+                        "name": "anime_slug",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Force refresh cache (opsional, belum diimplementasikan)",
+                        "name": "force_refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail anime berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/repository.AnimeDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Parameter anime_slug tidak ditemukan",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Anime tidak ditemukan",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/anime-terbaru/": {
+            "get": {
+                "description": "Mengambil daftar rilis anime terbaru dengan paginasi.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime List"
+                ],
+                "summary": "Get Latest Anime Releases",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Nomor halaman",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar rilis terbaru berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/repository.AnimeTerbaruResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Parameter halaman tidak valid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/episode-detail/": {
+            "get": {
+                "description": "Mengambil detail lengkap sebuah episode berdasarkan URL.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Episode Detail"
+                ],
+                "summary": "Get Episode Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "URL lengkap dari halaman episode",
+                        "name": "episode_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Force refresh cache (opsional, belum diimplementasikan)",
+                        "name": "force_refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail episode berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/repository.EpisodeDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Parameter episode_url tidak valid atau kosong",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Episode tidak ditemukan",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/home/": {
+            "get": {
+                "description": "Mengambil daftar anime terbaru, film, top 10, dan jadwal rilis mingguan.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime"
+                ],
+                "summary": "Get Latest Anime \u0026 Schedule",
+                "responses": {
+                    "200": {
+                        "description": "Data berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/repository.FinalResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error internal server",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/jadwal-rilis/": {
+            "get": {
+                "description": "Mengambil jadwal rilis anime untuk semua hari.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jadwal Rilis"
+                ],
+                "summary": "Get Release Schedule",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Force refresh cache (opsional, belum diimplementasikan)",
+                        "name": "force_refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Jadwal rilis berhasil diambil",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error internal server",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/jadwal-rilis/{day}": {
+            "get": {
+                "description": "Mengambil jadwal rilis anime untuk hari yang spesifik.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jadwal Rilis"
+                ],
+                "summary": "Get Release Schedule by Day",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hari dalam bahasa Indonesia (e.g., senin, selasa)",
+                        "name": "day",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Force refresh cache (opsional, belum diimplementasikan)",
+                        "name": "force_refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Jadwal rilis berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/repository.JadwalHarianResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Hari tidak ditemukan",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error internal server",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/movie/": {
+            "get": {
+                "description": "Mengambil daftar anime dari halaman utama (latest) sebagai pengganti daftar film.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Get \"Movie\" List (from Latest)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Nomor halaman",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/repository.MovieListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Parameter halaman tidak valid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error internal server",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/search/": {
+            "get": {
+                "description": "Mencari anime berdasarkan query.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime List"
+                ],
+                "summary": "Search Anime",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Kata kunci pencarian",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hasil pencarian",
+                        "schema": {
+                            "$ref": "#/definitions/repository.SearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Parameter query tidak ditemukan",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Memeriksa apakah layanan berjalan dengan baik.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Utilities"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "Layanan berjalan",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "repository.AnimeDetailResponse": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string",
+                    "example": "haikyuu-movie-gomisuteba-no-kessen"
+                },
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "details": {
+                    "$ref": "#/definitions/repository.Details"
+                },
+                "episode_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.EpisodeListItem"
+                    }
+                },
+                "genre": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "School",
+                        "Sports"
+                    ]
+                },
+                "judul": {
+                    "type": "string",
+                    "example": "Nonton Anime Haikyuu!! Movie..."
+                },
+                "penonton": {
+                    "type": "string",
+                    "example": "N/A"
+                },
+                "rating": {
+                    "$ref": "#/definitions/repository.RatingInfo"
+                },
+                "recommendations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.RecommendationItem"
+                    }
+                },
+                "sinopsis": {
+                    "type": "string",
+                    "example": "Kozume Kenma tidak pernah menganggap..."
+                },
+                "skor": {
+                    "type": "string",
+                    "example": "8.65"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "Completed"
+                },
+                "tipe": {
+                    "type": "string",
+                    "example": "Movie"
+                },
+                "url_anime": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/anime/haikyuu-movie-gomisuteba-no-kessen/"
+                },
+                "url_cover": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg"
+                }
+            }
+        },
+        "repository.AnimeInfo": {
+            "type": "object",
+            "properties": {
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "School",
+                        "Sports"
+                    ]
+                },
+                "synopsis": {
+                    "type": "string",
+                    "example": "Kozume Kenma tidak pernah menganggap..."
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Haikyuu!! Movie: Gomisuteba no Kessen"
+                }
+            }
+        },
+        "repository.AnimeTerbaruItem": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string",
+                    "example": "zutaboro-reijou-wa-ane-no-moto"
+                },
+                "cover": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2025/08/Zutaboro-Reijou-wa-Ane-no-Moto-Episode-5.jpg"
+                },
+                "episode": {
+                    "type": "string",
+                    "example": "5"
+                },
+                "judul": {
+                    "type": "string",
+                    "example": "Zutaboro Reijou wa Ane no Moto"
+                },
+                "rilis": {
+                    "type": "string",
+                    "example": "5 hours yang lalu"
+                },
+                "uploader": {
+                    "type": "string",
+                    "example": "Urusai"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/anime/zutaboro-reijou-wa-ane-no-moto/"
+                }
+            }
+        },
+        "repository.AnimeTerbaruResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.AnimeTerbaruItem"
+                    }
+                }
+            }
+        },
+        "repository.Details": {
+            "type": "object",
+            "properties": {
+                "Duration": {
+                    "type": "string"
+                },
+                "English": {
+                    "type": "string"
+                },
+                "Japanese": {
+                    "type": "string"
+                },
+                "Producers": {
+                    "type": "string"
+                },
+                "Released:": {
+                    "type": "string"
+                },
+                "Season": {
+                    "type": "string"
+                },
+                "Source": {
+                    "type": "string"
+                },
+                "Status": {
+                    "type": "string"
+                },
+                "Studio": {
+                    "type": "string"
+                },
+                "Synonyms": {
+                    "type": "string"
+                },
+                "Total Episode": {
+                    "type": "string"
+                },
+                "Type": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.DownloadProvider": {
+            "type": "object",
+            "properties": {
+                "provider": {
+                    "type": "string",
+                    "example": "Gofile"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://gofile.io/d/l3ahTO"
+                }
+            }
+        },
+        "repository.EpisodeDetailResponse": {
+            "type": "object",
+            "properties": {
+                "anime_info": {
+                    "$ref": "#/definitions/repository.AnimeInfo"
+                },
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "download_links": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repository.DownloadProvider"
+                            }
+                        }
+                    }
+                },
+                "navigation": {
+                    "$ref": "#/definitions/repository.EpisodeNavigation"
+                },
+                "other_episodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.OtherEpisode"
+                    }
+                },
+                "release_info": {
+                    "type": "string",
+                    "example": "9 months yang lalu"
+                },
+                "streaming_servers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.StreamingServer"
+                    }
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Haikyuu Movie: Gomisuteba no Kessen Sub Indo"
+                }
+            }
+        },
+        "repository.EpisodeListItem": {
+            "type": "object",
+            "properties": {
+                "episode": {
+                    "type": "string",
+                    "example": "1"
+                },
+                "episode_slug": {
+                    "type": "string",
+                    "example": "haikyuu-gomisuteba-no-kessen"
+                },
+                "release_date": {
+                    "type": "string",
+                    "example": "31 October 2024"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Haikyuu Movie: Gomisuteba no Kessen"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/haikyuu-gomisuteba-no-kessen/"
+                }
+            }
+        },
+        "repository.EpisodeNavigation": {
+            "type": "object",
+            "properties": {
+                "all_episodes_url": {
+                    "type": "string"
+                },
+                "next_episode_url": {
+                    "type": "string"
+                },
+                "previous_episode_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.FinalResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number"
+                },
+                "jadwal_rilis": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/repository.JadwalAnime"
+                        }
+                    }
+                },
+                "movies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.Movie"
+                    }
+                },
+                "new_eps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.NewEps"
+                    }
+                },
+                "top10": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.Top10Anime"
+                    }
+                }
+            }
+        },
+        "repository.JadwalAnime": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string"
+                },
+                "cover_url": {
+                    "type": "string"
+                },
+                "genres": {
+                    "description": "Catatan: Data ini tidak tersedia dari scraper",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "release_time": {
+                    "type": "string"
+                },
+                "score": {
+                    "description": "Catatan: Data ini tidak tersedia dari scraper",
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Catatan: Data ini tidak tersedia dari scraper",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.JadwalAnimeResponse": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string",
+                    "example": "busamen-gachi-fighter"
+                },
+                "cover_url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2025/07/150515.jpg"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Action",
+                        "Adventure"
+                    ]
+                },
+                "release_time": {
+                    "type": "string",
+                    "example": "00:00"
+                },
+                "score": {
+                    "type": "string",
+                    "example": "6.68"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Busamen Gachi Fighter"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "TV"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/anime/busamen-gachi-fighter/"
+                }
+            }
+        },
+        "repository.JadwalHarianResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.JadwalAnimeResponse"
+                    }
+                }
+            }
+        },
+        "repository.Movie": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string"
+                },
+                "cover": {
+                    "type": "string"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "judul": {
+                    "type": "string"
+                },
+                "tanggal": {
+                    "description": "Catatan: Data ini tidak tersedia dari scraper",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.MovieItem": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string",
+                    "example": "spy-x-family-code-white"
+                },
+                "cover": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/08/139388.jpg"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Action",
+                        "Comedy"
+                    ]
+                },
+                "judul": {
+                    "type": "string",
+                    "example": "Spy x Family: Code White"
+                },
+                "sinopsis": {
+                    "type": "string",
+                    "example": "Loid Forger, an elite spy, is warned by his handler..."
+                },
+                "skor": {
+                    "type": "string",
+                    "example": "8.1"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "Completed"
+                },
+                "tanggal": {
+                    "type": "string",
+                    "example": "22 Desember 2023"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/anime/spy-x-family-code-white/"
+                },
+                "views": {
+                    "type": "string",
+                    "example": "342490 Views"
+                }
+            }
+        },
+        "repository.MovieListResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.MovieItem"
+                    }
+                }
+            }
+        },
+        "repository.NewEps": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string"
+                },
+                "cover": {
+                    "type": "string"
+                },
+                "episode": {
+                    "type": "string"
+                },
+                "judul": {
+                    "type": "string"
+                },
+                "rilis": {
+                    "description": "Catatan: Data ini tidak tersedia dari scraper",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.OtherEpisode": {
+            "type": "object",
+            "properties": {
+                "release_date": {
+                    "type": "string",
+                    "example": "31 October 2024"
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/10/Haikyu.The_.Dumpster.Battle.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Haikyuu Movie: Gomisuteba no Kessen"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/haikyuu-gomisuteba-no-kessen/"
+                }
+            }
+        },
+        "repository.RatingInfo": {
+            "type": "object",
+            "properties": {
+                "score": {
+                    "type": "string",
+                    "example": "8.65"
+                },
+                "users": {
+                    "type": "string",
+                    "example": "34,719"
+                }
+            }
+        },
+        "repository.RecommendationItem": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string",
+                    "example": "overlord-iii"
+                },
+                "cover_url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/07/93473.jpg"
+                },
+                "episode": {
+                    "type": "string",
+                    "example": "Eps 12"
+                },
+                "rating": {
+                    "type": "string",
+                    "example": "8"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Overlord III"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/anime/overlord-iii/"
+                }
+            }
+        },
+        "repository.SearchResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.SearchResultItem"
+                    }
+                }
+            }
+        },
+        "repository.SearchResultItem": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string",
+                    "example": "naruto-kecil"
+                },
+                "genre": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Action",
+                        "Adventure"
+                    ]
+                },
+                "judul": {
+                    "type": "string",
+                    "example": "Naruto Kecil"
+                },
+                "penonton": {
+                    "type": "string",
+                    "example": "154157 Views"
+                },
+                "sinopsis": {
+                    "type": "string",
+                    "example": "Beberapa saat sebelum Naruto Uzumaki lahir..."
+                },
+                "skor": {
+                    "type": "string",
+                    "example": "8.84"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "Completed"
+                },
+                "tipe": {
+                    "type": "string",
+                    "example": "TV"
+                },
+                "url_anime": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/anime/naruto-kecil/"
+                },
+                "url_cover": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg"
+                }
+            }
+        },
+        "repository.StreamingServer": {
+            "type": "object",
+            "properties": {
+                "server_name": {
+                    "type": "string",
+                    "example": "Nakama 1080p"
+                },
+                "streaming_url": {
+                    "type": "string",
+                    "example": "https://pixeldrain.com/api/file/Ra5A3rtj"
+                }
+            }
+        },
+        "repository.Top10Anime": {
+            "type": "object",
+            "properties": {
+                "anime_slug": {
+                    "type": "string"
+                },
+                "cover": {
+                    "type": "string"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "judul": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
