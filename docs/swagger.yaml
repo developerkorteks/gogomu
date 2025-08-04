@@ -1,13 +1,10 @@
 basePath: /
 definitions:
-  repository.AnimeDetailResponse:
+  repository.AnimeDetailData:
     properties:
       anime_slug:
         example: haikyuu-movie-gomisuteba-no-kessen
         type: string
-      confidence_score:
-        example: 1
-        type: number
       details:
         $ref: '#/definitions/repository.Details'
       episode_list:
@@ -46,10 +43,22 @@ definitions:
         example: Movie
         type: string
       url_anime:
-        example: https://v1.samehadaku.how/anime/haikyuu-movie-gomisuteba-no-kessen/
+        example: https://gomunime.co/anime/haikyuu-movie-gomisuteba-no-kessen/
         type: string
       url_cover:
-        example: https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg
+        example: https://gomunime.co/wp-content/uploads/2024/10/140360.jpg
+        type: string
+    type: object
+  repository.AnimeDetailResponse:
+    properties:
+      confidence_score:
+        example: 1
+        type: number
+      data:
+        $ref: '#/definitions/repository.AnimeDetailData'
+      message:
+        type: string
+      source:
         type: string
     type: object
   repository.AnimeInfo:
@@ -104,6 +113,10 @@ definitions:
         items:
           $ref: '#/definitions/repository.AnimeTerbaruItem'
         type: array
+      message:
+        type: string
+      source:
+        type: string
     type: object
   repository.Details:
     properties:
@@ -141,13 +154,10 @@ definitions:
         example: https://gofile.io/d/l3ahTO
         type: string
     type: object
-  repository.EpisodeDetailResponse:
+  repository.EpisodeDetailData:
     properties:
       anime_info:
         $ref: '#/definitions/repository.AnimeInfo'
-      confidence_score:
-        example: 1
-        type: number
       download_links:
         additionalProperties:
           additionalProperties:
@@ -170,10 +180,22 @@ definitions:
           $ref: '#/definitions/repository.StreamingServer'
         type: array
       thumbnail_url:
-        example: https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg
+        example: https://gomunime.co/wp-content/uploads/2024/10/140360.jpg
         type: string
       title:
         example: 'Haikyuu Movie: Gomisuteba no Kessen Sub Indo'
+        type: string
+    type: object
+  repository.EpisodeDetailResponse:
+    properties:
+      confidence_score:
+        example: 1
+        type: number
+      data:
+        $ref: '#/definitions/repository.EpisodeDetailData'
+      message:
+        type: string
+      source:
         type: string
     type: object
   repository.EpisodeListItem:
@@ -207,6 +229,15 @@ definitions:
     properties:
       confidence_score:
         type: number
+      data:
+        $ref: '#/definitions/repository.HomeData'
+      message:
+        type: string
+      source:
+        type: string
+    type: object
+  repository.HomeData:
+    properties:
       jadwal_rilis:
         additionalProperties:
           items:
@@ -290,6 +321,10 @@ definitions:
         items:
           $ref: '#/definitions/repository.JadwalAnimeResponse'
         type: array
+      message:
+        type: string
+      source:
+        type: string
     type: object
   repository.Movie:
     properties:
@@ -355,6 +390,10 @@ definitions:
         items:
           $ref: '#/definitions/repository.MovieItem'
         type: array
+      message:
+        type: string
+      source:
+        type: string
     type: object
   repository.NewEps:
     properties:
@@ -426,6 +465,10 @@ definitions:
         items:
           $ref: '#/definitions/repository.SearchResultItem'
         type: array
+      message:
+        type: string
+      source:
+        type: string
     type: object
   repository.SearchResultItem:
     properties:

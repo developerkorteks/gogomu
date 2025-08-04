@@ -43,3 +43,19 @@ func SanitizeEpisodeSlug(slug string) (string, bool) {
 
 	return slug, false
 }
+
+// SlugToTitle mengubah slug menjadi title yang readable dengan menghapus tanda - dan mengubah ke title case
+func SlugToTitle(slug string) string {
+	// Hapus tanda - dan ganti dengan spasi
+	title := strings.ReplaceAll(slug, "-", " ")
+	
+	// Ubah ke title case (huruf pertama setiap kata menjadi kapital)
+	words := strings.Fields(title)
+	for i, word := range words {
+		if len(word) > 0 {
+			words[i] = strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
+		}
+	}
+	
+	return strings.Join(words, " ")
+}

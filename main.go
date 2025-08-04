@@ -273,11 +273,14 @@ func getAnimeDetailHandler(c *gin.Context) {
 	// --- Format Data ke dalam Response Akhir ---
 	var episodeList []repository.EpisodeListItem
 	for _, ep := range scrapedData.EpisodeList {
+		episodeSlug := repository.GetSlugFromURL(ep.URL)
+		episodeTitle := repository.SlugToTitle(episodeSlug)
+		
 		episodeList = append(episodeList, repository.EpisodeListItem{
 			Episode:     repository.FillStrIfEmpty(ep.Episode, "N/A"),
-			Title:       repository.FillStrIfEmpty(ep.Judul, scrapedData.Judul),
+			Title:       episodeTitle,
 			URL:         ep.URL,
-			EpisodeSlug: repository.GetSlugFromURL(ep.URL),
+			EpisodeSlug: episodeSlug,
 			ReleaseDate: repository.FillStrIfEmpty(ep.TanggalRilis, "N/A"),
 		})
 	}

@@ -281,107 +281,239 @@ func ScrapeAnimeDetail(animeSlug string) ScrapedAnimeDetails {
 
 	c := createOptimizedCollector(false, 1)
 
-	// Enhanced main info scraper with better selectors
-	c.OnHTML("article.post-180, div.infox", func(e *colly.HTMLElement) {
-		// Try multiple selectors for title
-		title := e.ChildText("h1.entry-title")
-		if title == "" {
-			title = e.DOM.Find(".bigcontent h1.entry-title").Text()
-		}
-		animeData.Judul = title
+	// Main info scraper for article.post-180 structure (detailed anime pages)
+	c.OnHTML("article.post-180", func(e *colly.HTMLElement) {
+		// Get bigcontent container
+		bigContent := e.DOM.Find(".bigcontent")
+		
+		// Extract title
+		animeData.Judul = bigContent.Find("h1.entry-title").Text()
 
-		// Enhanced rating extraction
-		ratingText := e.ChildText(".rating strong")
-		if ratingText == "" {
-			ratingText = e.DOM.Find(".bigcontent .rating strong").Text()
+		// Extract thumbnail with lazy-loading support
+		imgSelector := ".thumbook .thumb img"
+		thumbnailURL := bigContent.Find(imgSelector).AttrOr("data-src", "")
+		if thumbnailURL == "" {
+			thumbnailURL = bigContent.Find(imgSelector).AttrOr("src", "")
 		}
+		animeData.Thumbnail = thumbnailURL
+
+		// Extract rating/score
+		ratingText := bigContent.Find(".rating strong").Text()
 		animeData.Skor = strings.TrimSpace(strings.ReplaceAll(ratingText, "Rating", ""))
 
-		// Enhanced synopsis extraction
-		synopsis := strings.TrimSpace(e.DOM.Find(".bixbox.synp .entry-content p").Text())
-		if synopsis == "" {
-			synopsis = strings.TrimSpace(e.DOM.Find(".bixbox.synp .entry-content").Text())
-		}
-		if synopsis == "" {
-			synopsis = strings.TrimSpace(e.DOM.Find(".synp .entry-content").Text())
-		}
-		animeData.Sinopsis = synopsis
+		// Extract synopsis from the correct selector
+		animeData.Sinopsis = strings.TrimSpace(e.DOM.Find(".bixbox.synp .entry-content").Text())
 
-		// Enhanced thumbnail selection with multiple fallbacks
-		var thumbnailURL string
+		// Extract genres
+		bigContent.Find(".genxed a").Each(func(_ int, g *goquery.Selection) {
+			animeData.Genre = append(animeData.Genre, g.Text())
+		})
 
-		// Method 1: Try .thumbook .thumb img (most common)
-		imgSelector := ".thumbook .thumb img"
-		thumbnailURL = e.ChildAttr(imgSelector, "data-src")
-		if thumbnailURL == "" {
-			thumbnailURL = e.ChildAttr(imgSelector, "src")
-		}
-
-		// Method 2: Try .bigcontent .thumbook .thumb img
-		if thumbnailURL == "" {
-			imgSelector = ".bigcontent .thumbook .thumb img"
-			thumbnailURL = e.ChildAttr(imgSelector, "data-src")
-			if thumbnailURL == "" {
-				thumbnailURL = e.ChildAttr(imgSelector, "src")
+		// Extract details from .spe table
+		spe := bigContent.Find(".spe")
+		spe.Find("span").Each(func(_ int, s *goquery.Selection) {
+			text := s.Text()
+			switch {
+			case strings.HasPrefix(text, "Status:"):
+				animeData.Details["Status"] = strings.TrimSpace(strings.TrimPrefix(text, "Status:"))
+			case strings.HasPrefix(text, "Studio:"):
+				studioName := s.Find("a").Text()
+				if studioName != "" {
+					animeData.Details["Studio"] = studioName
+				}
+			case strings.HasPrefix(text, "Released:"):
+				animeData.Details["Released:"] = strings.TrimSpace(strings.TrimPrefix(text, "Released:"))
+			case strings.HasPrefix(text, "Duration:"):
+				animeData.Details["Duration"] = strings.TrimSpace(strings.TrimPrefix(text, "Duration:"))
+			case strings.HasPrefix(text, "Season:"):
+				seasonName := s.Find("a").Text()
+				if seasonName != "" {
+					animeData.Details["Season"] = seasonName
+				}
+			case strings.HasPrefix(text, "Type:"):
+				animeData.Details["Type"] = strings.TrimSpace(strings.TrimPrefix(text, "Type:"))
+			case strings.HasPrefix(text, "Episodes:"):
+				animeData.Details["Total Episode"] = strings.TrimSpace(strings.TrimPrefix(text, "Episodes:"))
+			case strings.HasPrefix(text, "Released on:"):
+				timeText := s.Find("time").Text()
+				if timeText != "" {
+					animeData.Details["Released on"] = timeText
+				}
+			case strings.HasPrefix(text, "Updated on:"):
+				timeText := s.Find("time").Text()
+				if timeText != "" {
+					animeData.Details["Updated on"] = timeText
+				}
+			case strings.HasPrefix(text, "Producers:"):
+				var producers []string
+				s.Find("a").Each(func(_ int, p *goquery.Selection) {
+					producers = append(producers, p.Text())
+				})
+				if len(producers) > 0 {
+					animeData.Details["Producers"] = strings.Join(producers, ", ")
+				}
 			}
+		})
+	})
+
+	// Alternative scraper for different page structure (like tougen-anki)
+	c.OnHTML("body", func(e *colly.HTMLElement) {
+		// Skip if we already got data from article.post-180
+		if animeData.Judul != "" {
+			return
 		}
 
-		// Method 3: Try any img in thumb container
-		if thumbnailURL == "" {
-			e.DOM.Find(".thumb img, .thumbook img").Each(func(_ int, img *goquery.Selection) {
-				if thumbnailURL == "" {
-					if dataSrc := img.AttrOr("data-src", ""); dataSrc != "" {
-						thumbnailURL = dataSrc
-					} else if src := img.AttrOr("src", ""); src != "" {
-						thumbnailURL = src
+		// Extract title from h1
+		title := e.DOM.Find("h1").First().Text()
+		animeData.Judul = strings.TrimSpace(title)
+
+		// Extract thumbnail - look for the main anime image
+		var thumbnailURL string
+		// First try to find img with specific patterns that indicate it's the main poster
+		e.DOM.Find("img").Each(func(_ int, img *goquery.Selection) {
+			src := img.AttrOr("src", "")
+			dataSrc := img.AttrOr("data-src", "")
+			
+			// Check both src and data-src
+			for _, url := range []string{src, dataSrc} {
+				if url != "" && !strings.Contains(url, "data:image/svg") && 
+				   !strings.Contains(url, "logo") && !strings.Contains(url, "icon") &&
+				   !strings.Contains(url, "avatar") {
+					if strings.Contains(url, "wp-content/uploads") && 
+					   (strings.Contains(url, ".jpg") || strings.Contains(url, ".webp") || strings.Contains(url, ".png")) &&
+					   (strings.Contains(url, "resize=247,350") || strings.Contains(url, "resize=350") || len(url) > 50) {
+						thumbnailURL = url
+						return
+					}
+				}
+			}
+		})
+		animeData.Thumbnail = thumbnailURL
+
+		// Extract synopsis - look for content after "Synopsis" heading or in specific sections
+		var synopsisText string
+		
+		// Method 1: Look for Synopsis heading
+		e.DOM.Find("h4, h2, h3").Each(func(_ int, heading *goquery.Selection) {
+			headingText := strings.ToLower(heading.Text())
+			if strings.Contains(headingText, "synopsis") && synopsisText == "" {
+				// Get all following content until next heading
+				next := heading.Next()
+				var content []string
+				for next.Length() > 0 {
+					text := strings.TrimSpace(next.Text())
+					if text != "" {
+						// Stop if we hit another heading
+						if next.Is("h1, h2, h3, h4, h5, h6") {
+							break
+						}
+						content = append(content, text)
+						if len(strings.Join(content, " ")) > 100 {
+							break
+						}
+					}
+					next = next.Next()
+				}
+				if len(content) > 0 {
+					synopsisText = strings.Join(content, " ")
+				}
+			}
+		})
+		
+		// Method 2: If no synopsis found, look for paragraphs with substantial content
+		if synopsisText == "" {
+			e.DOM.Find("p").Each(func(_ int, p *goquery.Selection) {
+				text := strings.TrimSpace(p.Text())
+				if len(text) > 200 && synopsisText == "" { // Look for substantial paragraphs
+					// Make sure it's not navigation or footer text
+					if !strings.Contains(strings.ToLower(text), "watch") && 
+					   !strings.Contains(strings.ToLower(text), "download") &&
+					   !strings.Contains(strings.ToLower(text), "streaming") {
+						synopsisText = text
 					}
 				}
 			})
 		}
+		
+		animeData.Sinopsis = synopsisText
 
-		// Method 4: Try meta og:image as last resort
-		if thumbnailURL == "" {
-			thumbnailURL = e.DOM.Find(`meta[property="og:image"]`).AttrOr("content", "")
-		}
-
-		animeData.Thumbnail = thumbnailURL
-
-		// Enhanced genre extraction with multiple selectors
-		genreFound := false
-		e.ForEach(".genxed a", func(_ int, g *colly.HTMLElement) {
-			animeData.Genre = append(animeData.Genre, g.Text)
-			genreFound = true
+		// Extract genres - only from the main content area, not sidebar
+		genreMap := make(map[string]bool) // Use map to avoid duplicates
+		// Look for genre links in the main content area only
+		e.DOM.Find("main a[href*='/genres/'], .content a[href*='/genres/'], article a[href*='/genres/']").Each(func(_ int, g *goquery.Selection) {
+			genreText := strings.TrimSpace(g.Text())
+			if genreText != "" && len(genreText) < 30 { // Avoid long text that's not a genre
+				genreMap[genreText] = true
+			}
 		})
-
-		// Fallback genre selector
-		if !genreFound {
-			e.DOM.Find(".bigcontent .genxed a").Each(func(_ int, g *goquery.Selection) {
-				animeData.Genre = append(animeData.Genre, g.Text())
+		
+		// If no genres found in main content, try a more specific approach
+		if len(genreMap) == 0 {
+			// Look for genre links that are close to the anime title or in the first part of the page
+			e.DOM.Find("a[href*='/genres/']").Each(func(i int, g *goquery.Selection) {
+				if i < 10 { // Only check first 10 genre links to avoid sidebar
+					genreText := strings.TrimSpace(g.Text())
+					if genreText != "" && len(genreText) < 30 {
+						genreMap[genreText] = true
+					}
+				}
 			})
 		}
+		
+		// Convert map to slice
+		for genre := range genreMap {
+			animeData.Genre = append(animeData.Genre, genre)
+		}
 
-		// Enhanced detail table scraping with multiple selectors
-		detailsFound := false
-		e.DOM.Find(".spe span").Each(func(_ int, s *goquery.Selection) {
-			text := s.Text()
-			if colonIndex := strings.Index(text, ":"); colonIndex != -1 {
-				key := strings.TrimSpace(text[:colonIndex])
-				value := strings.TrimSpace(text[colonIndex+1:])
-				animeData.Details[key] = value
-				detailsFound = true
+		// Extract details from the page content with more specific regex
+		pageText := e.DOM.Text()
+		
+		// Extract status with better regex
+		statusRegex := regexp.MustCompile(`Status:\s*([A-Za-z]+)`)
+		if matches := statusRegex.FindStringSubmatch(pageText); len(matches) > 1 {
+			animeData.Details["Status"] = strings.TrimSpace(matches[1])
+		}
+
+		// Extract studio - be more specific
+		e.DOM.Find("a[href*='/studio/']").First().Each(func(_ int, s *goquery.Selection) {
+			studioText := strings.TrimSpace(s.Text())
+			if studioText != "" {
+				animeData.Details["Studio"] = studioText
 			}
 		})
 
-		// Fallback details selector
-		if !detailsFound {
-			e.DOM.Find(".bigcontent .spe span").Each(func(_ int, s *goquery.Selection) {
-				text := s.Text()
-				if colonIndex := strings.Index(text, ":"); colonIndex != -1 {
-					key := strings.TrimSpace(text[:colonIndex])
-					value := strings.TrimSpace(text[colonIndex+1:])
-					animeData.Details[key] = value
+		// Extract season - be more specific
+		e.DOM.Find("a[href*='/season/']").First().Each(func(_ int, s *goquery.Selection) {
+			seasonText := strings.TrimSpace(s.Text())
+			if seasonText != "" {
+				animeData.Details["Season"] = seasonText
+			}
+		})
+
+		// Extract producers - be more specific
+		var producers []string
+		e.DOM.Find("a[href*='/producer/']").Each(func(i int, p *goquery.Selection) {
+			if i < 5 { // Limit to first 5 to avoid duplicates
+				producerText := strings.TrimSpace(p.Text())
+				if producerText != "" {
+					producers = append(producers, producerText)
 				}
-			})
+			}
+		})
+		if len(producers) > 0 {
+			animeData.Details["Producers"] = strings.Join(producers, ", ")
+		}
+
+		// Extract type with better regex
+		typeRegex := regexp.MustCompile(`Type:\s*([A-Za-z]+)`)
+		if matches := typeRegex.FindStringSubmatch(pageText); len(matches) > 1 {
+			animeData.Details["Type"] = strings.TrimSpace(matches[1])
+		}
+
+		// Extract released year with better regex
+		releasedRegex := regexp.MustCompile(`Released:\s*(\d{4})`)
+		if matches := releasedRegex.FindStringSubmatch(pageText); len(matches) > 1 {
+			animeData.Details["Released:"] = strings.TrimSpace(matches[1])
 		}
 	})
 
@@ -398,9 +530,10 @@ func ScrapeAnimeDetail(animeSlug string) ScrapedAnimeDetails {
 		})
 	})
 
-	// Optimized recommendation scraper
-	c.OnHTML(`div.bixbox.rd-list`, func(e *colly.HTMLElement) {
-		e.ForEach("article.bs", func(_ int, el *colly.HTMLElement) {
+	// Recommendation scraper using correct selector from test
+	c.OnHTML(`div.bixbox:has(h3 > span:contains("Recommended Series"))`, func(e *colly.HTMLElement) {
+		e.ForEach(".listupd article.bs", func(_ int, el *colly.HTMLElement) {
+			// Handle lazy-loading for thumbnail
 			thumbURL := el.ChildAttr("img", "data-src")
 			if thumbURL == "" {
 				thumbURL = el.ChildAttr("img", "src")
@@ -416,31 +549,21 @@ func ScrapeAnimeDetail(animeSlug string) ScrapedAnimeDetails {
 		})
 	})
 
-	// Post-processing to ensure we have all required data
+	// Post-processing with minimal fallbacks to preserve real data
 	c.OnScraped(func(r *colly.Response) {
-		// Ensure we have a thumbnail - final fallback attempts
+		// Only use placeholder if absolutely no thumbnail found
 		if animeData.Thumbnail == "" {
-			// Try to construct thumbnail from anime name or use a default
-			log.Printf("Warning: No thumbnail found for %s, using fallback", animeData.Judul)
+			log.Printf("Warning: No thumbnail found for %s", animeData.Judul)
 			animeData.Thumbnail = "https://via.placeholder.com/350x500?text=No+Image"
 		}
 
-		// Ensure we have a synopsis
-		if animeData.Sinopsis == "" {
-			animeData.Sinopsis = "Sinopsis tidak tersedia."
-		}
-
-		// Ensure we have a score
-		if animeData.Skor == "" {
-			animeData.Skor = "N/A"
-		}
-
-		// Add status from details if available
-		if status, exists := animeData.Details["Status"]; exists && status != "" {
-			// This can be used by the API layer if needed
-		}
-
-		log.Printf("Successfully scraped anime: %s with thumbnail: %s", animeData.Judul, animeData.Thumbnail)
+		// Log what we found for debugging
+		log.Printf("Successfully scraped anime: %s", animeData.Judul)
+		log.Printf("- Thumbnail: %s", animeData.Thumbnail)
+		log.Printf("- Score: %s", animeData.Skor)
+		log.Printf("- Synopsis length: %d chars", len(animeData.Sinopsis))
+		log.Printf("- Genres: %d found", len(animeData.Genre))
+		log.Printf("- Episodes: %d found", len(animeData.EpisodeList))
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
@@ -532,11 +655,24 @@ func ScrapeEpisodeDetail(episodeURL string) ScrapedEpisodeDetails {
 		})
 	})
 
-	// Navigation
-	c.OnHTML("div.epnav", func(e *colly.HTMLElement) {
-		data.Navigation.PreviousEpisodeURL = e.ChildAttr(".previ a", "href")
-		data.Navigation.AllEpisodesURL = e.ChildAttr(".all-eps a", "href")
-		data.Navigation.NextEpisodeURL = e.ChildAttr(".nexti a", "href")
+	// Navigation - Updated selectors based on actual HTML structure
+	c.OnHTML("body", func(e *colly.HTMLElement) {
+		// Look for navigation links in the page
+		e.ForEach("a", func(_ int, el *colly.HTMLElement) {
+			linkText := strings.ToLower(strings.TrimSpace(el.Text))
+			href := el.Attr("href")
+			
+			if href != "" {
+				switch linkText {
+				case "prev":
+					data.Navigation.PreviousEpisodeURL = e.Request.AbsoluteURL(href)
+				case "all episodes":
+					data.Navigation.AllEpisodesURL = e.Request.AbsoluteURL(href)
+				case "next":
+					data.Navigation.NextEpisodeURL = e.Request.AbsoluteURL(href)
+				}
+			}
+		})
 	})
 
 	// Optimized episode list processing

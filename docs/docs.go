@@ -414,16 +414,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "repository.AnimeDetailResponse": {
+        "repository.AnimeDetailData": {
             "type": "object",
             "properties": {
                 "anime_slug": {
                     "type": "string",
                     "example": "haikyuu-movie-gomisuteba-no-kessen"
-                },
-                "confidence_score": {
-                    "type": "number",
-                    "example": 1
                 },
                 "details": {
                     "$ref": "#/definitions/repository.Details"
@@ -479,11 +475,29 @@ const docTemplate = `{
                 },
                 "url_anime": {
                     "type": "string",
-                    "example": "https://v1.samehadaku.how/anime/haikyuu-movie-gomisuteba-no-kessen/"
+                    "example": "https://gomunime.co/anime/haikyuu-movie-gomisuteba-no-kessen/"
                 },
                 "url_cover": {
                     "type": "string",
-                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg"
+                    "example": "https://gomunime.co/wp-content/uploads/2024/10/140360.jpg"
+                }
+            }
+        },
+        "repository.AnimeDetailResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "data": {
+                    "$ref": "#/definitions/repository.AnimeDetailData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
                 }
             }
         },
@@ -559,6 +573,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/repository.AnimeTerbaruItem"
                     }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
                 }
             }
         },
@@ -616,15 +636,11 @@ const docTemplate = `{
                 }
             }
         },
-        "repository.EpisodeDetailResponse": {
+        "repository.EpisodeDetailData": {
             "type": "object",
             "properties": {
                 "anime_info": {
                     "$ref": "#/definitions/repository.AnimeInfo"
-                },
-                "confidence_score": {
-                    "type": "number",
-                    "example": 1
                 },
                 "download_links": {
                     "type": "object",
@@ -659,11 +675,29 @@ const docTemplate = `{
                 },
                 "thumbnail_url": {
                     "type": "string",
-                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/10/140360.jpg"
+                    "example": "https://gomunime.co/wp-content/uploads/2024/10/140360.jpg"
                 },
                 "title": {
                     "type": "string",
                     "example": "Haikyuu Movie: Gomisuteba no Kessen Sub Indo"
+                }
+            }
+        },
+        "repository.EpisodeDetailResponse": {
+            "type": "object",
+            "properties": {
+                "confidence_score": {
+                    "type": "number",
+                    "example": 1
+                },
+                "data": {
+                    "$ref": "#/definitions/repository.EpisodeDetailData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
                 }
             }
         },
@@ -712,6 +746,20 @@ const docTemplate = `{
                 "confidence_score": {
                     "type": "number"
                 },
+                "data": {
+                    "$ref": "#/definitions/repository.HomeData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.HomeData": {
+            "type": "object",
+            "properties": {
                 "jadwal_rilis": {
                     "type": "object",
                     "additionalProperties": {
@@ -831,6 +879,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/repository.JadwalAnimeResponse"
                     }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
                 }
             }
         },
@@ -924,6 +978,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/repository.MovieItem"
                     }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
                 }
             }
         },
@@ -1026,6 +1086,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/repository.SearchResultItem"
                     }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
                 }
             }
         },
