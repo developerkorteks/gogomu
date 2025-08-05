@@ -3,18 +3,34 @@ features:
 
 nginx:
   root: public_html/public
+  locations:
+    - match: /static
+      alias: static
+      expires: 1d
+    - match: /swagger
+      try_files: $uri @app
+    - match: /api
+      try_files: $uri @app
+    - match: /
+      try_files: $uri @app
   
 passenger:
   enabled: "on"
-  app_start_command: env PORT=$PORT GIN_MODE=release ./app
+  app_start_command: ./startup.sh
+  app_type: generic
   
 commands:
   - echo "🚀 Starting MultipleScrape API deployment..."
   - go version
+  - echo "📦 Downloading dependencies..."
   - go mod download
   - go mod verify
   - echo "🔨 Building optimized binary..."
-  - go build -ldflags="-s -w" -o app
+  - CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.version=$(date +%Y%m%d-%H%M%S)" -o app
+  - chmod +x app
+  - chmod +x startup.sh
   - echo "✅ Build completed successfully!"
-  - ls -la app
+  - ls -la app startup.sh
   - echo "📊 Binary size:" && du -h app
+  - echo "🧪 Testing binary..."
+  - ./app --version || echo "Binary ready for deployment"

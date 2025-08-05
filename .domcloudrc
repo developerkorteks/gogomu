@@ -1,0 +1,4 @@
+# DOM Cloud Environment Configuration
+export GIN_MODE=release
+export CGO_ENABLED=0
+export GOOS=linux
