@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,12 @@ const (
 	BaseDomain = "https://gomunime.co"
 )
 
+var (
+	serverStartTime = time.Now()
+	requestCount    = 0
+	requestMutex    sync.Mutex
+)
+
 // Anotasi untuk informasi utama Swagger
 // @title Gomunime Scraper API
 // @version 1.0
@@ -39,14 +46,47 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
+	// CORS middleware
+	router.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		
+		c.Next()
+	})
+
+	// Request tracking middleware
+	router.Use(func(c *gin.Context) {
+		requestMutex.Lock()
+		requestCount++
+		requestMutex.Unlock()
+		c.Next()
+	})
+
 	// Setup Swagger
 	docs.SwaggerInfo.BasePath = "/"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Serve static files for dashboard
+	router.Static("/static", "./static")
+	
+	// Dashboard routes
+	router.GET("/", func(c *gin.Context) {
+		c.File("./static/dashboard.html")
+	})
+	router.GET("/dashboard", func(c *gin.Context) {
+		c.File("./static/dashboard.html")
+	})
+
 	// === ROUTING ===
-	// Endpoint lama untuk data gabungan
-	/* 	router.GET("/", getAnimeDataHandler) */
 	router.GET("/health", healthCheckHandler)
+	router.GET("/monitoring", monitoringHandler)
+	
 	// Grup endpoint baru untuk v1
 	apiV1 := router.Group("/api/v1")
 	{
@@ -58,11 +98,16 @@ func main() {
 		apiV1.GET("/anime-detail/", getAnimeDetailHandler)
 		apiV1.GET("/episode-detail/", getEpisodeDetailHandler)
 		apiV1.GET("/anime-terbaru/", getAnimeTerbaruHandler)
-		apiV1.GET("/search/", getSearchHandler) // <-- TAMBAHKAN ROUTE PENCARIAN
+		apiV1.GET("/search/", getSearchHandler)
+		apiV1.GET("/monitoring", monitoringHandler) // Monitoring endpoint
 	}
 
-	log.Println("Server berjalan di http://localhost:8080")
-	log.Println("Swagger UI tersedia di http://localhost:8080/swagger/index.html")
+	log.Println("🚀 Server berjalan di http://localhost:8080")
+	log.Println("📊 Dashboard Basic: http://localhost:8080/static/dashboard.html")
+	log.Println("📈 Dashboard Advanced: http://localhost:8080/static/advanced-dashboard.html")
+	log.Println("🔧 System Monitoring: http://localhost:8080/monitoring")
+	log.Println("📚 Swagger UI: http://localhost:8080/swagger/index.html")
+	log.Println("🔍 API Base URL: http://localhost:8080/api/v1")
 	if err := router.Run(":8080"); err != nil {
 		log.Fatal("Gagal menjalankan server:", err)
 	}
@@ -77,6 +122,60 @@ func main() {
 // @Router       /health [get]
 func healthCheckHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+// monitoringHandler menangani permintaan monitoring sistem.
+// @Summary      System Monitoring
+// @Description  Mengambil informasi monitoring sistem dan performa API.
+// @Tags         Utilities
+// @Produce      json
+// @Success      200  {object}  map[string]interface{} "Informasi monitoring"
+// @Router       /monitoring [get]
+func monitoringHandler(c *gin.Context) {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	uptime := time.Since(serverStartTime)
+	
+	requestMutex.Lock()
+	totalRequests := requestCount
+	requestMutex.Unlock()
+
+	monitoring := gin.H{
+		"server": gin.H{
+			"status":     "running",
+			"uptime":     uptime.String(),
+			"start_time": serverStartTime.Format(time.RFC3339),
+		},
+		"performance": gin.H{
+			"total_requests":    totalRequests,
+			"requests_per_hour": float64(totalRequests) / uptime.Hours(),
+			"memory_usage_mb":   float64(m.Alloc) / 1024 / 1024,
+			"goroutines":        runtime.NumGoroutine(),
+		},
+		"endpoints": gin.H{
+			"total":     8,
+			"available": []string{
+				"/api/v1/home",
+				"/api/v1/search/",
+				"/api/v1/movie/",
+				"/api/v1/jadwal-rilis/",
+				"/api/v1/jadwal-rilis/{day}",
+				"/api/v1/anime-detail/",
+				"/api/v1/episode-detail/",
+				"/api/v1/anime-terbaru/",
+			},
+		},
+		"system": gin.H{
+			"go_version":    runtime.Version(),
+			"os":           runtime.GOOS,
+			"architecture": runtime.GOARCH,
+			"cpu_cores":    runtime.NumCPU(),
+		},
+		"timestamp": time.Now().Format(time.RFC3339),
+	}
+
+	c.JSON(http.StatusOK, monitoring)
 }
 
 // getSearchHandler menangani permintaan pencarian anime.
@@ -113,8 +212,11 @@ func getSearchHandler(c *gin.Context) {
 		})
 	}
 
+	// Validasi data dan set confidence score
+	confidenceScore := repository.ValidateSearchData(searchResults)
+
 	response := repository.SearchResponse{
-		ConfidenceScore: 1.0,
+		ConfidenceScore: confidenceScore,
 		Data:            searchResults,
 		Message:         "Data berhasil diambil",
 		Source:          "gomunime.co",
@@ -200,28 +302,33 @@ func getEpisodeDetailHandler(c *gin.Context) {
 	}
 
 	// Format data ke dalam response akhir
-	response := repository.EpisodeDetailResponse{
-		ConfidenceScore: 1.0,
-		Data: repository.EpisodeDetailData{
-			Title:            scrapedData.Title,
-			ThumbnailURL:     repository.FillStrIfEmpty(scrapedData.ThumbnailURL, scrapedData.AnimeInfo.ThumbnailURL),
-			StreamingServers: scrapedData.StreamingServers,
-			ReleaseInfo:      repository.FillStrIfEmpty(scrapedData.ReleaseInfo, "N/A"),
-			DownloadLinks:    scrapedData.DownloadLinks,
-			Navigation:       scrapedData.Navigation,
-			AnimeInfo:        scrapedData.AnimeInfo,
-			OtherEpisodes:    scrapedData.OtherEpisodes,
-		},
-		Message: "Data berhasil diambil",
-		Source:  "gomunime.co",
+	episodeDetailData := repository.EpisodeDetailData{
+		Title:            scrapedData.Title,
+		ThumbnailURL:     repository.FillStrIfEmpty(scrapedData.ThumbnailURL, scrapedData.AnimeInfo.ThumbnailURL),
+		StreamingServers: scrapedData.StreamingServers,
+		ReleaseInfo:      repository.FillStrIfEmpty(scrapedData.ReleaseInfo, "N/A"),
+		DownloadLinks:    scrapedData.DownloadLinks,
+		Navigation:       scrapedData.Navigation,
+		AnimeInfo:        scrapedData.AnimeInfo,
+		OtherEpisodes:    scrapedData.OtherEpisodes,
 	}
 
 	// Pastikan data wajib tidak kosong
-	if response.Data.Title == "" {
-		response.Data.Title = "Judul tidak ditemukan"
+	if episodeDetailData.Title == "" {
+		episodeDetailData.Title = "Judul tidak ditemukan"
 	}
-	if response.Data.ThumbnailURL == "" {
-		response.Data.ThumbnailURL = "https://placehold.co/200x300?text=No+Image"
+	if episodeDetailData.ThumbnailURL == "" {
+		episodeDetailData.ThumbnailURL = "https://placehold.co/200x300?text=No+Image"
+	}
+
+	// Validasi data dan set confidence score
+	confidenceScore := repository.ValidateEpisodeDetailData(episodeDetailData)
+
+	response := repository.EpisodeDetailResponse{
+		ConfidenceScore: confidenceScore,
+		Data:            episodeDetailData,
+		Message:         "Data berhasil diambil",
+		Source:          "gomunime.co",
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -355,29 +462,34 @@ func getAnimeDetailHandler(c *gin.Context) {
 		Released:     repository.FillStrIfEmpty(scrapedData.Details["Released"], "N/A"),
 	}
 
-	response := repository.AnimeDetailResponse{
-		ConfidenceScore: 1.0,
-		Data: repository.AnimeDetailData{
-			Judul:           scrapedData.Judul,
-			URLAnime:        fmt.Sprintf("https://gomunime.co/anime/%s/", finalSlug),
-			AnimeSlug:       finalSlug,
-			URLCover:        scrapedData.Thumbnail,
-			EpisodeList:     episodeList,
-			Recommendations: recommendations,
-			Status:          repository.FillStrIfEmpty(details.Status, "N/A"),
-			Tipe:            repository.FillStrIfEmpty(details.Type, "N/A"),
-			Skor:            repository.FillStrIfEmpty(scrapedData.Skor, "N/A"),
-			Penonton:        "N/A",
-			Sinopsis:        repository.FillStrIfEmpty(scrapedData.Sinopsis, "Sinopsis tidak tersedia."),
-			Genre:           scrapedData.Genre,
-			Details:         details,
-			Rating: repository.RatingInfo{
-				Score: repository.FillStrIfEmpty(scrapedData.Skor, "N/A"),
-				Users: "N/A",
-			},
+	animeDetailData := repository.AnimeDetailData{
+		Judul:           scrapedData.Judul,
+		URLAnime:        fmt.Sprintf("https://gomunime.co/anime/%s/", finalSlug),
+		AnimeSlug:       finalSlug,
+		URLCover:        scrapedData.Thumbnail,
+		EpisodeList:     episodeList,
+		Recommendations: recommendations,
+		Status:          repository.FillStrIfEmpty(details.Status, "N/A"),
+		Tipe:            repository.FillStrIfEmpty(details.Type, "N/A"),
+		Skor:            repository.FillStrIfEmpty(scrapedData.Skor, "N/A"),
+		Penonton:        "N/A",
+		Sinopsis:        repository.FillStrIfEmpty(scrapedData.Sinopsis, "Sinopsis tidak tersedia."),
+		Genre:           scrapedData.Genre,
+		Details:         details,
+		Rating: repository.RatingInfo{
+			Score: repository.FillStrIfEmpty(scrapedData.Skor, "N/A"),
+			Users: "N/A",
 		},
-		Message: "Data berhasil diambil",
-		Source:  "gomunime.co",
+	}
+
+	// Validasi data dan set confidence score
+	confidenceScore := repository.ValidateAnimeDetailData(animeDetailData)
+
+	response := repository.AnimeDetailResponse{
+		ConfidenceScore: confidenceScore,
+		Data:            animeDetailData,
+		Message:         "Data berhasil diambil",
+		Source:          "gomunime.co",
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -429,8 +541,11 @@ func getMovieListHandler(c *gin.Context) {
 		movies = append(movies, movie)
 	}
 
+	// Validasi data dan set confidence score
+	confidenceScore := repository.ValidateMovieData(movies)
+
 	response := repository.MovieListResponse{
-		ConfidenceScore: 1.0,
+		ConfidenceScore: confidenceScore,
 		Data:            movies,
 		Message:         "Data berhasil diambil",
 		Source:          "gomunime.co",
@@ -498,9 +613,12 @@ func getJadwalRilisByDayHandler(c *gin.Context) {
 		})
 	}
 
+	// Validasi data dan set confidence score
+	confidenceScore := repository.ValidateJadwalData(animeList)
+
 	// Bungkus dalam struct response akhir
 	response := repository.JadwalHarianResponse{
-		ConfidenceScore: 1.0,
+		ConfidenceScore: confidenceScore,
 		Data:            animeList,
 		Message:         "Data berhasil diambil",
 		Source:          "gomunime.co",
@@ -681,15 +799,20 @@ func formatData(latest []repository.ScrapedLatestAnime, schedule []repository.Sc
 		jadwalMap[day.Hari] = animeList
 	}
 
+	homeData := repository.HomeData{
+		Top10:       top10List,
+		NewEps:      newEpsList,
+		Movies:      movieList,
+		JadwalRilis: jadwalMap,
+	}
+
+	// Validasi data dan set confidence score
+	confidenceScore := repository.ValidateHomeData(homeData)
+
 	return repository.FinalResponse{
-		ConfidenceScore: 1.0,
-		Data: repository.HomeData{
-			Top10:       top10List,
-			NewEps:      newEpsList,
-			Movies:      movieList, // Bagian ini sekarang akan selalu terisi
-			JadwalRilis: jadwalMap,
-		},
-		Message: "Data berhasil diambil",
-		Source:  "gomunime.co",
+		ConfidenceScore: confidenceScore,
+		Data:            homeData,
+		Message:         "Data berhasil diambil",
+		Source:          "gomunime.co",
 	}
 }

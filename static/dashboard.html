@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Monitoring Dashboard - MultipleScrape</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .endpoint-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .endpoint-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .endpoint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .endpoint-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-loading {
+            background: #e2e3e5;
+            color: #6c757d;
+        }
+
+        .endpoint-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: bold;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-high {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .confidence-medium {
+            background: linear-gradient(90deg, #ffc107, #fd7e14);
+        }
+
+        .confidence-low {
+            background: linear-gradient(90deg, #dc3545, #e83e8c);
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-button {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .control-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .logs {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .log-timestamp {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .log-message {
+            font-weight: 500;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-details {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .endpoints-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .endpoint-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 API Monitoring Dashboard</h1>
+            <p>Real-time monitoring for MultipleScrape API endpoints</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-endpoints">8</div>
+                <div class="stat-label">Total Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="healthy-endpoints">-</div>
+                <div class="stat-label">Healthy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-confidence">-</div>
+                <div class="stat-label">Avg Confidence</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="last-check">-</div>
+                <div class="stat-label">Last Check</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" onclick="testAllEndpoints()">🔄 Test All</button>
+            <button class="control-button" onclick="toggleAutoRefresh()" id="auto-refresh-btn">⏰ Auto Refresh</button>
+            <button class="control-button" onclick="clearLogs()">🗑️ Clear Logs</button>
+        </div>
+
+        <div class="endpoints-grid" id="endpoints-grid">
+            <!-- Endpoints will be populated by JavaScript -->
+        </div>
+
+        <div class="logs">
+            <h3 style="margin-bottom: 20px; color: #333;">📋 Activity Logs</h3>
+            <div id="logs-container">
+                <div class="log-entry">
+                    <div class="log-timestamp">Dashboard initialized</div>
+                    <div class="log-message">Ready to monitor API endpoints</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/v1';
+        let autoRefreshInterval = null;
+        let isAutoRefresh = false;
+
+        const endpoints = [
+            {
+                name: 'Home',
+                path: '/home',
+                method: 'GET',
+                description: 'Homepage data with top anime, new episodes, movies, and schedule'
+            },
+            {
+                name: 'Search',
+                path: '/search/?query=one+piece',
+                method: 'GET',
+                description: 'Search anime by query'
+            },
+            {
+                name: 'Movies',
+                path: '/movie/',
+                method: 'GET',
+                description: 'List of anime movies'
+            },
+            {
+                name: 'Schedule',
+                path: '/jadwal-rilis/',
+                method: 'GET',
+                description: 'Weekly anime release schedule'
+            },
+            {
+                name: 'Schedule by Day',
+                path: '/jadwal-rilis/monday',
+                method: 'GET',
+                description: 'Daily anime release schedule'
+            },
+            {
+                name: 'Anime Detail',
+                path: '/anime-detail/?anime_slug=one-piece',
+                method: 'GET',
+                description: 'Detailed anime information'
+            },
+            {
+                name: 'Episode Detail',
+                path: '/episode-detail/?episode_url=https://gomunime.co/koujo-denka-no-kateikyoushi-3/',
+                method: 'GET',
+                description: 'Episode streaming and download information'
+            },
+            {
+                name: 'Episode Detail (One Piece)',
+                path: '/episode-detail/?episode_url=https://gomunime.co/one-piece-episode-1138-subtitle-indonesia/',
+                method: 'GET',
+                description: 'Test complex episode URL parsing'
+            }
+        ];
+
+        function initializeDashboard() {
+            renderEndpoints();
+            testAllEndpoints();
+            addLog('Dashboard initialized', 'System ready for monitoring');
+        }
+
+        function renderEndpoints() {
+            const grid = document.getElementById('endpoints-grid');
+            grid.innerHTML = '';
+
+            endpoints.forEach((endpoint, index) => {
+                const card = document.createElement('div');
+                card.className = 'endpoint-card';
+                card.id = `endpoint-${index}`;
+                
+                card.innerHTML = `
+                    <div class="endpoint-header">
+                        <div class="endpoint-title">${endpoint.name}</div>
+                        <div class="status-badge status-loading" id="status-${index}">
+                            <span class="loading-spinner"></span> Testing
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Method</span>
+                            <span class="detail-value">${endpoint.method}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Response Time</span>
+                            <span class="detail-value" id="response-time-${index}">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Confidence Score</span>
+                            <span class="detail-value" id="confidence-${index}">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Data Count</span>
+                            <span class="detail-value" id="data-count-${index}">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidence-bar-${index}" style="width: 0%"></div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <small style="color: #666;">${endpoint.description}</small>
+                    </div>
+                    
+                    <button class="test-button" onclick="testEndpoint(${index})" id="test-btn-${index}">
+                        🧪 Test Endpoint
+                    </button>
+                    
+                    <div id="error-${index}" class="error-details" style="display: none;"></div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        async function testEndpoint(index) {
+            const endpoint = endpoints[index];
+            const startTime = Date.now();
+            
+            // Update UI to loading state
+            updateEndpointStatus(index, 'loading', 'Testing...');
+            document.getElementById(`test-btn-${index}`).disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint.path}`);
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const confidence = data.confidence_score || 0;
+                    const dataCount = getDataCount(data);
+                    
+                    // Update UI with success
+                    updateEndpointStatus(index, 'success', 'Healthy');
+                    document.getElementById(`response-time-${index}`).textContent = `${responseTime}ms`;
+                    document.getElementById(`confidence-${index}`).textContent = `${(confidence * 100).toFixed(1)}%`;
+                    document.getElementById(`data-count-${index}`).textContent = dataCount;
+                    
+                    // Update confidence bar
+                    updateConfidenceBar(index, confidence);
+                    
+                    // Hide error details
+                    document.getElementById(`error-${index}`).style.display = 'none';
+                    
+                    addLog(`${endpoint.name} tested`, `✅ Success - ${responseTime}ms, Confidence: ${(confidence * 100).toFixed(1)}%`);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                // Update UI with error
+                updateEndpointStatus(index, 'error', 'Error');
+                document.getElementById(`response-time-${index}`).textContent = 'Failed';
+                document.getElementById(`confidence-${index}`).textContent = '0%';
+                document.getElementById(`data-count-${index}`).textContent = '0';
+                
+                // Show error details
+                const errorDiv = document.getElementById(`error-${index}`);
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+                
+                // Update confidence bar
+                updateConfidenceBar(index, 0);
+                
+                addLog(`${endpoint.name} failed`, `❌ Error: ${error.message}`);
+            } finally {
+                document.getElementById(`test-btn-${index}`).disabled = false;
+            }
+        }
+
+        function updateEndpointStatus(index, status, text) {
+            const statusElement = document.getElementById(`status-${index}`);
+            statusElement.className = `status-badge status-${status}`;
+            
+            if (status === 'loading') {
+                statusElement.innerHTML = `<span class="loading-spinner"></span> ${text}`;
+            } else {
+                statusElement.textContent = text;
+            }
+        }
+
+        function updateConfidenceBar(index, confidence) {
+            const bar = document.getElementById(`confidence-bar-${index}`);
+            const percentage = confidence * 100;
+            
+            bar.style.width = `${percentage}%`;
+            
+            if (confidence >= 0.8) {
+                bar.className = 'confidence-fill confidence-high';
+            } else if (confidence >= 0.5) {
+                bar.className = 'confidence-fill confidence-medium';
+            } else {
+                bar.className = 'confidence-fill confidence-low';
+            }
+        }
+
+        function getDataCount(data) {
+            if (data.data) {
+                if (Array.isArray(data.data)) {
+                    return data.data.length;
+                } else if (typeof data.data === 'object') {
+                    // For home endpoint
+                    if (data.data.top10) {
+                        return data.data.top10.length + (data.data.new_eps?.length || 0) + (data.data.movies?.length || 0);
+                    }
+                    // For schedule endpoint
+                    if (data.data.Monday || data.data.Sunday) {
+                        return Object.values(data.data).reduce((total, day) => total + (Array.isArray(day) ? day.length : 0), 0);
+                    }
+                    // For anime detail
+                    if (data.data.episode_list) {
+                        return data.data.episode_list.length;
+                    }
+                    // For episode detail
+                    if (data.data.streaming_servers) {
+                        return data.data.streaming_servers.length;
+                    }
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+        async function testAllEndpoints() {
+            addLog('Bulk test started', 'Testing all endpoints...');
+            
+            const promises = endpoints.map((_, index) => testEndpoint(index));
+            await Promise.all(promises);
+            
+            updateStats();
+            addLog('Bulk test completed', 'All endpoints tested');
+        }
+
+        function updateStats() {
+            const healthyCount = document.querySelectorAll('.status-success').length;
+            const totalCount = endpoints.length;
+            
+            // Calculate average confidence
+            let totalConfidence = 0;
+            let validConfidenceCount = 0;
+            
+            endpoints.forEach((_, index) => {
+                const confidenceText = document.getElementById(`confidence-${index}`).textContent;
+                if (confidenceText !== '-' && confidenceText !== '0%') {
+                    totalConfidence += parseFloat(confidenceText.replace('%', ''));
+                    validConfidenceCount++;
+                }
+            });
+            
+            const avgConfidence = validConfidenceCount > 0 ? (totalConfidence / validConfidenceCount).toFixed(1) : 0;
+            
+            document.getElementById('healthy-endpoints').textContent = `${healthyCount}/${totalCount}`;
+            document.getElementById('avg-confidence').textContent = `${avgConfidence}%`;
+            document.getElementById('last-check').textContent = new Date().toLocaleTimeString();
+        }
+
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('auto-refresh-btn');
+            
+            if (isAutoRefresh) {
+                clearInterval(autoRefreshInterval);
+                isAutoRefresh = false;
+                btn.textContent = '⏰ Auto Refresh';
+                btn.classList.remove('active');
+                addLog('Auto refresh disabled', 'Manual testing mode');
+            } else {
+                autoRefreshInterval = setInterval(testAllEndpoints, 30000); // 30 seconds
+                isAutoRefresh = true;
+                btn.textContent = '⏸️ Stop Auto';
+                btn.classList.add('active');
+                addLog('Auto refresh enabled', 'Testing every 30 seconds');
+            }
+        }
+
+        function addLog(title, message) {
+            const logsContainer = document.getElementById('logs-container');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            logEntry.innerHTML = `
+                <div class="log-timestamp">${new Date().toLocaleString()}</div>
+                <div class="log-message"><strong>${title}:</strong> ${message}</div>
+            `;
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Keep only last 50 logs
+            const logs = logsContainer.children;
+            if (logs.length > 50) {
+                logsContainer.removeChild(logs[logs.length - 1]);
+            }
+        }
+
+        function clearLogs() {
+            const logsContainer = document.getElementById('logs-container');
+            logsContainer.innerHTML = `
+                <div class="log-entry">
+                    <div class="log-timestamp">${new Date().toLocaleString()}</div>
+                    <div class="log-message">Logs cleared</div>
+                </div>
+            `;
+            addLog('Logs cleared', 'Log history reset');
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>

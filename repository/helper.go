@@ -76,3 +76,137 @@ func SlugToTitle(slug string) string {
 	
 	return strings.Join(words, " ")
 }
+
+// ValidateHomeData memvalidasi data untuk endpoint home
+func ValidateHomeData(data HomeData) float64 {
+	score := 1.0
+	
+	// Validasi Top10
+	for _, item := range data.Top10 {
+		if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
+			score = 0.0
+			break
+		}
+	}
+	
+	// Validasi NewEps
+	if score > 0 {
+		for _, item := range data.NewEps {
+			if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
+				score = 0.0
+				break
+			}
+		}
+	}
+	
+	// Validasi Movies
+	if score > 0 {
+		for _, item := range data.Movies {
+			if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
+				score = 0.0
+				break
+			}
+		}
+	}
+	
+	// Validasi JadwalRilis
+	if score > 0 {
+		for _, daySchedule := range data.JadwalRilis {
+			for _, item := range daySchedule {
+				if item.Title == "" || item.URL == "" || item.CoverURL == "" || item.AnimeSlug == "" {
+					score = 0.0
+					break
+				}
+			}
+			if score == 0 {
+				break
+			}
+		}
+	}
+	
+	return score
+}
+
+// ValidateMovieData memvalidasi data untuk endpoint movie
+func ValidateMovieData(data []MovieItem) float64 {
+	if len(data) == 0 {
+		return 0.0
+	}
+	
+	for _, item := range data {
+		if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
+			return 0.0
+		}
+	}
+	
+	return 1.0
+}
+
+// ValidateSearchData memvalidasi data untuk endpoint search
+func ValidateSearchData(data []SearchResultItem) float64 {
+	if len(data) == 0 {
+		return 0.0
+	}
+	
+	for _, item := range data {
+		if item.Judul == "" || item.URLAnime == "" || item.URLCover == "" || item.AnimeSlug == "" {
+			return 0.0
+		}
+	}
+	
+	return 1.0
+}
+
+// ValidateJadwalData memvalidasi data untuk endpoint jadwal
+func ValidateJadwalData(data []JadwalAnimeResponse) float64 {
+	if len(data) == 0 {
+		return 0.0
+	}
+	
+	for _, item := range data {
+		if item.Title == "" || item.URL == "" || item.CoverURL == "" || item.AnimeSlug == "" {
+			return 0.0
+		}
+	}
+	
+	return 1.0
+}
+
+// ValidateAnimeDetailData memvalidasi data untuk endpoint anime detail
+func ValidateAnimeDetailData(data AnimeDetailData) float64 {
+	// Field wajib untuk anime detail
+	if data.Judul == "" || data.URLAnime == "" || data.URLCover == "" || data.AnimeSlug == "" {
+		return 0.0
+	}
+	
+	// Validasi episode list
+	for _, episode := range data.EpisodeList {
+		if episode.Title == "" || episode.URL == "" || episode.EpisodeSlug == "" {
+			return 0.0
+		}
+	}
+	
+	return 1.0
+}
+
+// ValidateEpisodeDetailData memvalidasi data untuk endpoint episode detail
+func ValidateEpisodeDetailData(data EpisodeDetailData) float64 {
+	// Field wajib untuk episode detail
+	if data.Title == "" {
+		return 0.0
+	}
+	
+	// Harus ada minimal 1 streaming server
+	if len(data.StreamingServers) == 0 {
+		return 0.0
+	}
+	
+	// Validasi streaming servers
+	for _, server := range data.StreamingServers {
+		if server.StreamingURL == "" {
+			return 0.0
+		}
+	}
+	
+	return 1.0
+}
