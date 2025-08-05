@@ -1,0 +1,20 @@
+features:
+  - go
+
+nginx:
+  root: public_html/public
+  
+passenger:
+  enabled: "on"
+  app_start_command: env PORT=$PORT GIN_MODE=release ./app
+  
+commands:
+  - echo "🚀 Starting MultipleScrape API deployment..."
+  - go version
+  - go mod download
+  - go mod verify
+  - echo "🔨 Building optimized binary..."
+  - go build -ldflags="-s -w" -o app
+  - echo "✅ Build completed successfully!"
+  - ls -la app
+  - echo "📊 Binary size:" && du -h app

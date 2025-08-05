@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -102,13 +103,23 @@ func main() {
 		apiV1.GET("/monitoring", monitoringHandler) // Monitoring endpoint
 	}
 
-	log.Println("🚀 Server berjalan di http://localhost:8080")
-	log.Println("📊 Dashboard Basic: http://localhost:8080/static/dashboard.html")
-	log.Println("📈 Dashboard Advanced: http://localhost:8080/static/advanced-dashboard.html")
-	log.Println("🔧 System Monitoring: http://localhost:8080/monitoring")
-	log.Println("📚 Swagger UI: http://localhost:8080/swagger/index.html")
-	log.Println("🔍 API Base URL: http://localhost:8080/api/v1")
-	if err := router.Run(":8080"); err != nil {
+	// Get port from environment variable or use default
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	// Server address - use 127.0.0.1 for DOM Cloud compatibility
+	serverAddr := "127.0.0.1:" + port
+	
+	log.Println("🚀 Server berjalan di http://127.0.0.1:" + port)
+	log.Println("📊 Dashboard Basic: /static/dashboard.html")
+	log.Println("📈 Dashboard Advanced: /static/advanced-dashboard.html")
+	log.Println("🔧 System Monitoring: /monitoring")
+	log.Println("📚 Swagger UI: /swagger/index.html")
+	log.Println("🔍 API Base URL: /api/v1")
+	
+	if err := router.Run(serverAddr); err != nil {
 		log.Fatal("Gagal menjalankan server:", err)
 	}
 }
