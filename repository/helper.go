@@ -31,6 +31,23 @@ func FillSliceIfEmpty(value, dummy []string) []string {
 }
 
 func SanitizeEpisodeSlug(slug string) (string, bool) {
+	// Pattern untuk mendeteksi slug episode
+	patterns := []string{
+		"-episode-",
+		"-ep-",
+		"-eps-",
+	}
+	
+	// Cari pattern episode dalam slug
+	for _, pattern := range patterns {
+		if index := strings.Index(slug, pattern); index != -1 {
+			// Ambil bagian sebelum pattern episode
+			animeSlug := slug[:index]
+			return animeSlug, true
+		}
+	}
+	
+	// Fallback ke logika lama jika tidak ada pattern episode
 	lastDashIndex := strings.LastIndex(slug, "-")
 	if lastDashIndex == -1 {
 		return slug, false
