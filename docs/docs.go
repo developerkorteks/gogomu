@@ -411,6 +411,27 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/monitoring": {
+            "get": {
+                "description": "Mengambil informasi monitoring sistem dan performa API.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Utilities"
+                ],
+                "summary": "System Monitoring",
+                "responses": {
+                    "200": {
+                        "description": "Informasi monitoring",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

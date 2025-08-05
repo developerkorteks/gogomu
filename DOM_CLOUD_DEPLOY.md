@@ -175,6 +175,22 @@ exec ./app                       # Start application
 3. Static file path issues
 ```
 
+### **Swagger Issues (FIXED):**
+```bash
+# ✅ SOLVED: Custom Swagger implementation
+# Features:
+1. Dynamic host detection
+2. HTTPS/HTTP auto-detection
+3. Production URL compatibility
+4. Custom swagger.json endpoint
+5. No more localhost hardcoding
+
+# Test endpoints:
+- /swagger/index.html (Custom UI)
+- /swagger/doc.json (Dynamic JSON)
+- /swagger/ (Auto redirect)
+```
+
 ### **Dashboard Not Loading:**
 ```bash
 # Check:
