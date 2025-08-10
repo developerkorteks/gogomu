@@ -37,7 +37,7 @@ func SanitizeEpisodeSlug(slug string) (string, bool) {
 		"-ep-",
 		"-eps-",
 	}
-	
+
 	// Cari pattern episode dalam slug
 	for _, pattern := range patterns {
 		if index := strings.Index(slug, pattern); index != -1 {
@@ -46,7 +46,7 @@ func SanitizeEpisodeSlug(slug string) (string, bool) {
 			return animeSlug, true
 		}
 	}
-	
+
 	// Fallback ke logika lama jika tidak ada pattern episode
 	lastDashIndex := strings.LastIndex(slug, "-")
 	if lastDashIndex == -1 {
@@ -65,7 +65,7 @@ func SanitizeEpisodeSlug(slug string) (string, bool) {
 func SlugToTitle(slug string) string {
 	// Hapus tanda - dan ganti dengan spasi
 	title := strings.ReplaceAll(slug, "-", " ")
-	
+
 	// Ubah ke title case (huruf pertama setiap kata menjadi kapital)
 	words := strings.Fields(title)
 	for i, word := range words {
@@ -73,14 +73,14 @@ func SlugToTitle(slug string) string {
 			words[i] = strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
 		}
 	}
-	
+
 	return strings.Join(words, " ")
 }
 
 // ValidateHomeData memvalidasi data untuk endpoint home
 func ValidateHomeData(data HomeData) float64 {
 	score := 1.0
-	
+
 	// Validasi Top10
 	for _, item := range data.Top10 {
 		if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
@@ -88,7 +88,7 @@ func ValidateHomeData(data HomeData) float64 {
 			break
 		}
 	}
-	
+
 	// Validasi NewEps
 	if score > 0 {
 		for _, item := range data.NewEps {
@@ -98,7 +98,7 @@ func ValidateHomeData(data HomeData) float64 {
 			}
 		}
 	}
-	
+
 	// Validasi Movies
 	if score > 0 {
 		for _, item := range data.Movies {
@@ -108,7 +108,7 @@ func ValidateHomeData(data HomeData) float64 {
 			}
 		}
 	}
-	
+
 	// Validasi JadwalRilis
 	if score > 0 {
 		for _, daySchedule := range data.JadwalRilis {
@@ -123,7 +123,7 @@ func ValidateHomeData(data HomeData) float64 {
 			}
 		}
 	}
-	
+
 	return score
 }
 
@@ -132,13 +132,13 @@ func ValidateMovieData(data []MovieItem) float64 {
 	if len(data) == 0 {
 		return 0.0
 	}
-	
+
 	for _, item := range data {
 		if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
 			return 0.0
 		}
 	}
-	
+
 	return 1.0
 }
 
@@ -147,13 +147,13 @@ func ValidateSearchData(data []SearchResultItem) float64 {
 	if len(data) == 0 {
 		return 0.0
 	}
-	
+
 	for _, item := range data {
-		if item.Judul == "" || item.URLAnime == "" || item.URLCover == "" || item.AnimeSlug == "" {
+		if item.Judul == "" || item.URL == "" || item.Cover == "" || item.AnimeSlug == "" {
 			return 0.0
 		}
 	}
-	
+
 	return 1.0
 }
 
@@ -162,30 +162,30 @@ func ValidateJadwalData(data []JadwalAnimeResponse) float64 {
 	if len(data) == 0 {
 		return 0.0
 	}
-	
+
 	for _, item := range data {
 		if item.Title == "" || item.URL == "" || item.CoverURL == "" || item.AnimeSlug == "" {
 			return 0.0
 		}
 	}
-	
+
 	return 1.0
 }
 
 // ValidateAnimeDetailData memvalidasi data untuk endpoint anime detail
 func ValidateAnimeDetailData(data AnimeDetailData) float64 {
 	// Field wajib untuk anime detail
-	if data.Judul == "" || data.URLAnime == "" || data.URLCover == "" || data.AnimeSlug == "" {
+	if data.Judul == "" || data.URL == "" || data.Cover == "" || data.AnimeSlug == "" {
 		return 0.0
 	}
-	
+
 	// Validasi episode list
 	for _, episode := range data.EpisodeList {
 		if episode.Title == "" || episode.URL == "" || episode.EpisodeSlug == "" {
 			return 0.0
 		}
 	}
-	
+
 	return 1.0
 }
 
@@ -195,18 +195,18 @@ func ValidateEpisodeDetailData(data EpisodeDetailData) float64 {
 	if data.Title == "" {
 		return 0.0
 	}
-	
+
 	// Harus ada minimal 1 streaming server
 	if len(data.StreamingServers) == 0 {
 		return 0.0
 	}
-	
+
 	// Validasi streaming servers
 	for _, server := range data.StreamingServers {
 		if server.StreamingURL == "" {
 			return 0.0
 		}
 	}
-	
+
 	return 1.0
 }

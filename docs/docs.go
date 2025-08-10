@@ -442,6 +442,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "haikyuu-movie-gomisuteba-no-kessen"
                 },
+                "cover": {
+                    "type": "string",
+                    "example": "https://gomunime.co/wp-content/uploads/2024/10/140360.jpg"
+                },
                 "details": {
                     "$ref": "#/definitions/repository.Details"
                 },
@@ -494,13 +498,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Movie"
                 },
-                "url_anime": {
+                "url": {
                     "type": "string",
                     "example": "https://gomunime.co/anime/haikyuu-movie-gomisuteba-no-kessen/"
-                },
-                "url_cover": {
-                    "type": "string",
-                    "example": "https://gomunime.co/wp-content/uploads/2024/10/140360.jpg"
                 }
             }
         },
@@ -1123,6 +1123,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "naruto-kecil"
                 },
+                "cover": {
+                    "type": "string",
+                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg"
+                },
                 "genre": {
                     "type": "array",
                     "items": {
@@ -1157,13 +1161,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "TV"
                 },
-                "url_anime": {
+                "url": {
                     "type": "string",
                     "example": "https://v1.samehadaku.how/anime/naruto-kecil/"
-                },
-                "url_cover": {
-                    "type": "string",
-                    "example": "https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg"
                 }
             }
         },
@@ -1212,7 +1212,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:8001",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Gomunime Scraper API",

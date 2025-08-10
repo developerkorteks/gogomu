@@ -5,6 +5,9 @@ definitions:
       anime_slug:
         example: haikyuu-movie-gomisuteba-no-kessen
         type: string
+      cover:
+        example: https://gomunime.co/wp-content/uploads/2024/10/140360.jpg
+        type: string
       details:
         $ref: '#/definitions/repository.Details'
       episode_list:
@@ -42,11 +45,8 @@ definitions:
       tipe:
         example: Movie
         type: string
-      url_anime:
+      url:
         example: https://gomunime.co/anime/haikyuu-movie-gomisuteba-no-kessen/
-        type: string
-      url_cover:
-        example: https://gomunime.co/wp-content/uploads/2024/10/140360.jpg
         type: string
     type: object
   repository.AnimeDetailResponse:
@@ -475,6 +475,9 @@ definitions:
       anime_slug:
         example: naruto-kecil
         type: string
+      cover:
+        example: https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg
+        type: string
       genre:
         example:
         - Action
@@ -500,11 +503,8 @@ definitions:
       tipe:
         example: TV
         type: string
-      url_anime:
+      url:
         example: https://v1.samehadaku.how/anime/naruto-kecil/
-        type: string
-      url_cover:
-        example: https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg
         type: string
     type: object
   repository.StreamingServer:
@@ -533,7 +533,7 @@ definitions:
       url:
         type: string
     type: object
-host: localhost:8080
+host: localhost:8001
 info:
   contact:
     name: API Support

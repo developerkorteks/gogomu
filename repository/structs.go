@@ -2,7 +2,7 @@ package repository
 
 type SearchResultItem struct {
 	Judul     string   `json:"judul" example:"Naruto Kecil"`
-	URLAnime  string   `json:"url_anime" example:"https://v1.samehadaku.how/anime/naruto-kecil/"`
+	URL       string   `json:"url" example:"https://v1.samehadaku.how/anime/naruto-kecil/"`
 	AnimeSlug string   `json:"anime_slug" example:"naruto-kecil"`
 	Status    string   `json:"status" example:"Completed"`
 	Tipe      string   `json:"tipe" example:"TV"`
@@ -10,7 +10,7 @@ type SearchResultItem struct {
 	Penonton  string   `json:"penonton" example:"154157 Views"`
 	Sinopsis  string   `json:"sinopsis" example:"Beberapa saat sebelum Naruto Uzumaki lahir..."`
 	Genre     []string `json:"genre" example:"Action,Adventure"`
-	URLCover  string   `json:"url_cover" example:"https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg"`
+	Cover     string   `json:"cover" example:"https://v1.samehadaku.how/wp-content/uploads/2024/08/142503.jpg"`
 }
 
 // SearchResponse adalah struct untuk output endpoint /search/.
@@ -51,7 +51,7 @@ type MovieItem struct {
 
 // MovieListResponse adalah struct untuk output endpoint /movie/.
 type MovieListResponse struct {
-	ConfidenceScore float64     `json:"confidence_score" example:"1"`
+	ConfidenceScore float64     `json:"confidence_score" example:"1.0"`
 	Data            []MovieItem `json:"data"`
 	Message         string      `json:"message"`
 	Source          string      `json:"source"`
@@ -78,10 +78,10 @@ type JadwalHarianResponse struct {
 
 // FinalResponse adalah struct utama untuk output JSON API.
 type FinalResponse struct {
-	ConfidenceScore float64                  `json:"confidence_score"`
-	Data            HomeData                 `json:"data"`
-	Message         string                   `json:"message"`
-	Source          string                   `json:"source"`
+	ConfidenceScore float64  `json:"confidence_score"`
+	Data            HomeData `json:"data"`
+	Message         string   `json:"message"`
+	Source          string   `json:"source"`
 }
 
 // HomeData adalah struct untuk data halaman utama
@@ -163,17 +163,17 @@ type JadwalAnimeResponse struct {
 
 // AnimeDetailResponse adalah struct utama untuk output endpoint /anime-detail/.
 type AnimeDetailResponse struct {
-	ConfidenceScore float64              `json:"confidence_score" example:"1"`
-	Data            AnimeDetailData      `json:"data"`
-	Message         string               `json:"message"`
-	Source          string               `json:"source"`
+	ConfidenceScore float64         `json:"confidence_score" example:"1"`
+	Data            AnimeDetailData `json:"data"`
+	Message         string          `json:"message"`
+	Source          string          `json:"source"`
 }
 
 type AnimeDetailData struct {
 	Judul           string               `json:"judul" example:"Nonton Anime Haikyuu!! Movie..."`
-	URLAnime        string               `json:"url_anime" example:"https://gomunime.co/anime/haikyuu-movie-gomisuteba-no-kessen/"`
+	URL             string               `json:"url" example:"https://gomunime.co/anime/haikyuu-movie-gomisuteba-no-kessen/"`
 	AnimeSlug       string               `json:"anime_slug" example:"haikyuu-movie-gomisuteba-no-kessen"`
-	URLCover        string               `json:"url_cover" example:"https://gomunime.co/wp-content/uploads/2024/10/140360.jpg"`
+	Cover           string               `json:"cover" example:"https://gomunime.co/wp-content/uploads/2024/10/140360.jpg"`
 	EpisodeList     []EpisodeListItem    `json:"episode_list"`
 	Recommendations []RecommendationItem `json:"recommendations"`
 	Status          string               `json:"status" example:"Completed"`
@@ -255,10 +255,10 @@ type ScrapedAnimeDetails struct {
 }
 
 type EpisodeDetailResponse struct {
-	ConfidenceScore  float64                                  `json:"confidence_score" example:"1"`
-	Data             EpisodeDetailData                        `json:"data"`
-	Message          string                                   `json:"message"`
-	Source           string                                   `json:"source"`
+	ConfidenceScore float64           `json:"confidence_score" example:"1"`
+	Data            EpisodeDetailData `json:"data"`
+	Message         string            `json:"message"`
+	Source          string            `json:"source"`
 }
 
 type EpisodeDetailData struct {

@@ -38,7 +38,7 @@ var (
 // @contact.url    https://github.com/you
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-// @host      localhost:8080
+// @host      localhost:8001
 // @BasePath  /
 
 func main() {
@@ -50,12 +50,12 @@ func main() {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		
+
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-		
+
 		c.Next()
 	})
 
@@ -69,13 +69,13 @@ func main() {
 
 	// Setup Swagger
 	docs.SwaggerInfo.BasePath = "/"
-	
+
 	// Setup custom Swagger routes with dynamic host detection
 	setupSwaggerRoutes(router)
 
 	// Serve static files for dashboard
 	router.Static("/static", "./static")
-	
+
 	// Dashboard routes
 	router.GET("/", func(c *gin.Context) {
 		c.File("./static/dashboard.html")
@@ -87,7 +87,7 @@ func main() {
 	// === ROUTING ===
 	router.GET("/health", healthCheckHandler)
 	router.GET("/monitoring", monitoringHandler)
-	
+
 	// Grup endpoint baru untuk v1
 	apiV1 := router.Group("/api/v1")
 	{
@@ -111,14 +111,14 @@ func main() {
 
 	// Server address - use 127.0.0.1 for DOM Cloud compatibility
 	serverAddr := "127.0.0.1:" + port
-	
+
 	log.Println("🚀 Server berjalan di http://127.0.0.1:" + port)
 	log.Println("📊 Dashboard Basic: /static/dashboard.html")
 	log.Println("📈 Dashboard Advanced: /static/advanced-dashboard.html")
 	log.Println("🔧 System Monitoring: /monitoring")
 	log.Println("📚 Swagger UI: /swagger/index.html")
 	log.Println("🔍 API Base URL: /api/v1")
-	
+
 	if err := router.Run(serverAddr); err != nil {
 		log.Fatal("Gagal menjalankan server:", err)
 	}
@@ -147,7 +147,7 @@ func monitoringHandler(c *gin.Context) {
 	runtime.ReadMemStats(&m)
 
 	uptime := time.Since(serverStartTime)
-	
+
 	requestMutex.Lock()
 	totalRequests := requestCount
 	requestMutex.Unlock()
@@ -165,7 +165,7 @@ func monitoringHandler(c *gin.Context) {
 			"goroutines":        runtime.NumGoroutine(),
 		},
 		"endpoints": gin.H{
-			"total":     8,
+			"total": 8,
 			"available": []string{
 				"/api/v1/home",
 				"/api/v1/search/",
@@ -178,7 +178,7 @@ func monitoringHandler(c *gin.Context) {
 			},
 		},
 		"system": gin.H{
-			"go_version":    runtime.Version(),
+			"go_version":   runtime.Version(),
 			"os":           runtime.GOOS,
 			"architecture": runtime.GOARCH,
 			"cpu_cores":    runtime.NumCPU(),
@@ -211,9 +211,9 @@ func getSearchHandler(c *gin.Context) {
 	for _, item := range scrapedResults {
 		searchResults = append(searchResults, repository.SearchResultItem{
 			Judul:     item.Judul,
-			URLAnime:  item.Tautan,
+			URL:       item.Tautan,
 			AnimeSlug: repository.GetSlugFromURL(item.Tautan),
-			URLCover:  item.Thumbnail,
+			Cover:     item.Thumbnail,
 			Status:    repository.FillStrIfEmpty(item.Status, "N/A"),
 			Tipe:      repository.FillStrIfEmpty(item.Tipe, "N/A"),
 			Skor:      repository.FillStrIfEmpty(item.Skor, "N/A"),
@@ -393,7 +393,7 @@ func getAnimeDetailHandler(c *gin.Context) {
 	for _, ep := range scrapedData.EpisodeList {
 		episodeSlug := repository.GetSlugFromURL(ep.URL)
 		episodeTitle := repository.SlugToTitle(episodeSlug)
-		
+
 		episodeList = append(episodeList, repository.EpisodeListItem{
 			Episode:     repository.FillStrIfEmpty(ep.Episode, "N/A"),
 			Title:       episodeTitle,
@@ -475,9 +475,9 @@ func getAnimeDetailHandler(c *gin.Context) {
 
 	animeDetailData := repository.AnimeDetailData{
 		Judul:           scrapedData.Judul,
-		URLAnime:        fmt.Sprintf("https://gomunime.co/anime/%s/", finalSlug),
+		URL:             fmt.Sprintf("https://gomunime.co/anime/%s/", finalSlug),
 		AnimeSlug:       finalSlug,
-		URLCover:        scrapedData.Thumbnail,
+		Cover:           scrapedData.Thumbnail,
 		EpisodeList:     episodeList,
 		Recommendations: recommendations,
 		Status:          repository.FillStrIfEmpty(details.Status, "N/A"),
@@ -810,20 +810,24 @@ func formatData(latest []repository.ScrapedLatestAnime, schedule []repository.Sc
 		jadwalMap[day.Hari] = animeList
 	}
 
+	// Validasi data dan set confidence score
 	homeData := repository.HomeData{
 		Top10:       top10List,
 		NewEps:      newEpsList,
 		Movies:      movieList,
 		JadwalRilis: jadwalMap,
 	}
-
-	// Validasi data dan set confidence score
 	confidenceScore := repository.ValidateHomeData(homeData)
 
 	return repository.FinalResponse{
 		ConfidenceScore: confidenceScore,
-		Data:            homeData,
-		Message:         "Data berhasil diambil",
-		Source:          "gomunime.co",
+		Data: repository.HomeData{
+			Top10:       top10List,
+			NewEps:      newEpsList,
+			Movies:      movieList,
+			JadwalRilis: jadwalMap,
+		},
+		Message: "Data berhasil diambil",
+		Source:  "gomunime.co",
 	}
 }
